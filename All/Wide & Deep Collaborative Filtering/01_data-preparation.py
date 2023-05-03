@@ -9,31 +9,31 @@
 # COMMAND ----------
 
 # MAGIC %md # Introduction 
-# MAGIC 
+# MAGIC
 # MAGIC Collaborative filters leverage similarities between users to make recommendations:
-# MAGIC 
+# MAGIC
 # MAGIC <img src="https://brysmiwasb.blob.core.windows.net/demos/images/instacart_collabrecom.png" width="600">
-# MAGIC 
+# MAGIC
 # MAGIC Unlike with memory-based collaborative filters which employ the weighted averaging of product ratings (explicit or implied) between similar users, model-based collaborative filters leverage the features associated with user-product combinations to predict that a given user will click-on or purchase a particular item.  To build such a model, we will need information about users and the products they have purchased.
 
 # COMMAND ----------
 
 # MAGIC %md # Step 1: Load the Data
-# MAGIC 
+# MAGIC
 # MAGIC The basic building block of the collaborative filter is transactional data containing a customer identifier. The popular [Instacart dataset](https://www.kaggle.com/c/instacart-market-basket-analysis) provides us a nice collection of such data with over 3 million grocery orders placed by over 200,000 Instacart users over a nearly 2-year period across of portfolio of nearly 50,000 products. This is the same dataset used in the construction of a memory-based collaborative filter as documented in a [previously published set of notebooks](https://databricks.com/blog/2020/12/18/personalizing-the-customer-experience-with-recommendations.html) which provides a nice comparison to the techniques explored here.
-# MAGIC 
+# MAGIC
 # MAGIC **NOTE** Due to the terms and conditions by which these data are made available, anyone interested in recreating this work will need to accept the terms and rules before downloading the data files from Kaggle and uploading them to a folder structure as described below.
-# MAGIC 
+# MAGIC
 # MAGIC The primary data files available for download are organized as follows. You can save the data permanently under a pre-defined [mount point](https://docs.databricks.com/data/databricks-file-system.html#mount-object-storage-to-dbfs) that named */mnt/instacart*:
-# MAGIC 
+# MAGIC
 # MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/instacart_filedownloads.png' width=250>
-# MAGIC 
-# MAGIC 
-# MAGIC 
+# MAGIC
+# MAGIC
+# MAGIC
 # MAGIC Read into dataframes, these files form the following data model which captures the products customers have included in individual transactions:
-# MAGIC 
+# MAGIC
 # MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/instacart_schema2.png' width=300>
-# MAGIC 
+# MAGIC
 # MAGIC We have automated this data preparation step for you and used a */tmp/instacart_wide_deep* storage path throughout this accelerator. We will apply minimal transformations to this data, persisting it to the Delta Lake format for speedier access:
 
 # COMMAND ----------
@@ -55,7 +55,7 @@ from pyspark.sql import window as w
 # COMMAND ----------
 
 # MAGIC %md The orders data is pre-divided into *prior* and *training* evaluation sets, where the *training* dataset represents the last order placed in the overall sequence of orders associated with a given customer.  The *prior* dataset represents those orders that proceed the *training* order.  In a previous set of notebooks built on this data, we relabeled the *prior* and *training* evaluation sets as *calibration* and *evaluation*, respectively, to better align terminology with how the data was being used.  Here, we will preserve the *prior* & *training* designations as this better aligns with our current modeling needs.
-# MAGIC 
+# MAGIC
 # MAGIC We will add to this dataset a field, *days_prior_to_last_order*, which calculates the days from a given order to the order that represents the *training* instance. This field will help us when developing features around purchases taking place different intervals prior to the final order.  All other tables will be brought into the database without schema changes, simply converting the underlying format from CSV to delta lake for better query performance later:
 
 # COMMAND ----------
@@ -310,14 +310,14 @@ display(
 # COMMAND ----------
 
 # MAGIC %md # Step 2: Combine Order Details
-# MAGIC 
+# MAGIC
 # MAGIC With our data loaded, we will flatten our order details through a view.  This will make access to our data during feature engineering significantly easier:
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC DROP VIEW IF EXISTS order_details;
-# MAGIC 
+# MAGIC
 # MAGIC CREATE VIEW order_details as
 # MAGIC   SELECT
 # MAGIC     a.eval_set,

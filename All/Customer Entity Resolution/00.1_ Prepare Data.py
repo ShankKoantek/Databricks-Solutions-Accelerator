@@ -9,9 +9,9 @@
 # COMMAND ----------
 
 # MAGIC %md ## Introduction
-# MAGIC 
+# MAGIC
 # MAGIC For this solution accelerator, we'll make use of the [North Carolina Voters 5M](https://dbs.uni-leipzig.de/research/projects/object_matching/benchmark_datasets_for_entity_resolution) dataset made available by the [Database Group Leipzig](https://dbs.uni-leipzig.de/en). This dataset, more fully documented in [this paper](https://dbs.uni-leipzig.de/file/famer-adbis2017.pdf), contains name and limited address information for several million registered voters within the state of North Carolina. There are purposefully duplicate records inserted in the set with specific adjustments to make them fuzzy matchable bringing the total number of records in the dataset to around 5-million, hence the name of the dataset.
-# MAGIC 
+# MAGIC
 # MAGIC The dataset is made available for download as a gzipped TAR file which needs to be downloaded, unzipped, untarred and uploaded to a folder named *downloads* under a [mount point](https://docs.databricks.com/data/databricks-file-system.html#mount-object-storage-to-dbfs) in your environment before running the remainder of these notebooks. In our environment, we've used a default name of */mnt/ncvoters* for our mount point.  You can alter this in the *ER Setup 00* notebook if you've elected to create a mount point under a different name.
 
 # COMMAND ----------
@@ -39,7 +39,7 @@ from filesplit.split import Split
 # COMMAND ----------
 
 # MAGIC %md ## Step 1: Reset the Environment
-# MAGIC 
+# MAGIC
 # MAGIC Zingg depends on having just the right data in the right place.  To ensure we maintain a clean environment, we'll reset all the directories housing input, output and transient data.  In most environments, such a step should not be necessary.  This is just a precaution:
 
 # COMMAND ----------
@@ -52,7 +52,7 @@ dbutils.fs.rm(config['dir']['staging'], recurse=True)
 # COMMAND ----------
 
 # MAGIC %md ## Step 2: Separate Data into Initial and Incremental Sets
-# MAGIC 
+# MAGIC
 # MAGIC The North Carolina Voters 5M dataset consists of 5 files containing roughly 1-million records each. We will use the data in the first 4 files as our initial dataset and then split the 5th file into incremental sets of approximately 10,000 records each:
 
 # COMMAND ----------
@@ -119,7 +119,7 @@ display(
 # COMMAND ----------
 
 # MAGIC %md ## Step 2: Examine the Data
-# MAGIC 
+# MAGIC
 # MAGIC To get a sense of the data, we'll examine the records in the original dataset:
 
 # COMMAND ----------
@@ -142,21 +142,21 @@ display(spark.table('ncvoters'))
 # COMMAND ----------
 
 # MAGIC %md In the dataset, voters are identified based on the following fields:</p>
-# MAGIC 
+# MAGIC
 # MAGIC * givenname
 # MAGIC * surname
 # MAGIC * suburb
 # MAGIC * postcode
-# MAGIC 
+# MAGIC
 # MAGIC A unique identifier, *recid*, was used in the original dataset to identify unique records.
-# MAGIC 
+# MAGIC
 # MAGIC To create duplicates in the dataset, the team responsible for creating it simply re-inserted some number of the rows back into it without any modifications.  Another set of duplicates was created by re-inserting rows while *corrupting* one or multiple of the 4 fields identified above.  Corruptions take the form of the removal, replacement or reversal of some number or characters from within a string as would be typical of a poor data entry process.  These duplicates are identifiable by their duplicate *recid* values:
 
 # COMMAND ----------
 
 # DBTITLE 1,Identify Author-Generated Duplicates
 # MAGIC %sql
-# MAGIC 
+# MAGIC
 # MAGIC SELECT *
 # MAGIC FROM ncvoters
 # MAGIC WHERE recid IN (
@@ -170,14 +170,14 @@ display(spark.table('ncvoters'))
 # COMMAND ----------
 
 # MAGIC %md Still other duplicates are naturally occuring in the dataset.  With a dataset of this size, it's not unexpected that some errors were not caught following data entry.  For example, consider these records which appear to be exact duplicates but which have separate *recid* values.
-# MAGIC 
+# MAGIC
 # MAGIC It is possible that two individuals within a given zip code have the same first and last name so that some of these records only appear to be duplicates given the lack of additional identifying data in the dataset. However, the uniqueness of some of these names would indicate that some are true duplicates in the original dataset:
 
 # COMMAND ----------
 
 # DBTITLE 1,Identify Apparent Duplicates In Original Dataset
 # MAGIC %sql
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   a.*
 # MAGIC FROM ncvoters a
@@ -196,9 +196,9 @@ display(spark.table('ncvoters'))
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC &copy; 2022 Databricks, Inc. All rights reserved. The source in this notebook is provided subject to the [Databricks License](https://databricks.com/db-license-source).  All included or referenced third party libraries are subject to the licenses set forth below.
-# MAGIC 
+# MAGIC
 # MAGIC | library                                | description             | license    | source                                              |
 # MAGIC |----------------------------------------|-------------------------|------------|-----------------------------------------------------|
 # MAGIC | zingg                                  | entity resolution library | GNU Affero General Public License v3.0    | https://github.com/zinggAI/zingg/                       |

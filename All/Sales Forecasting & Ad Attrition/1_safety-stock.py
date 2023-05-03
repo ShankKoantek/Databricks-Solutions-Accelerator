@@ -5,23 +5,23 @@
 # COMMAND ----------
 
 # MAGIC %md ##Safety Stock Calculations for Inventory Management
-# MAGIC 
+# MAGIC
 # MAGIC Periodically, we need to order product to replenish our inventory. When we do this, we have in mind a future period for which we are attempting to address demand along with an estimate the demand in that period.
-# MAGIC 
+# MAGIC
 # MAGIC Our estimates are never perfectly accurate.  Instead, when we use modern forecasting techniques, we are estimating the *mean* demand across a range of potential demand values. Improvements in model accuracy narrow the range of variability around this predicted mean, but we still expect to be below the mean 50% of the time and above it the other 50% (as that's simply the nature of a mean value). 
-# MAGIC 
+# MAGIC
 # MAGIC When actual demand exceeds our forecasts, we run the risk of a stockout (out of stock) situation with its associated potential loss of sales and reduced customer satisfaction. To avoid this, we often include additional units of stock, above the forecasted demand, in our replenishment  orders. The amount of this *safety stock* depends on our estimates of variability in the demand for this upcoming period and the percentage of time we are willing to risk an out of stock situation.  
-# MAGIC 
+# MAGIC
 # MAGIC For a more in-depth examination of safety stock calculations, please refer to the blog associated with this notebook.  The purpose of the information provided here is to examine how forecast data can be employed to effectively calculate safety stock requirements leveraging standard formulas.
 
 # COMMAND ----------
 
 # MAGIC %md ###Step 1: Generate the Forecasts
-# MAGIC 
+# MAGIC
 # MAGIC Using the [Facebook Prophet](https://facebook.github.io/prophet/) library and an anonymized but [real-world dataset](https://www.kaggle.com/c/demand-forecasting-kernels-only/data) consisting of 5 years of daily sales data for 50 items sold across 10 stores, we will generate store-item specific forecasts.  The details on how this data should be loaded into this environment and how the 500 models will be trained in a timely manner in order to generate the required forecasts are addressed in the notebook associated with [this blog post](https://databricks.com/blog/2020/01/27/time-series-forecasting-prophet-spark.html). We strongly suggest you review that blog post and its associated notebook before proceeding.
-# MAGIC 
+# MAGIC
 # MAGIC Differing from the patterns established in that notebook, we will incorporate holiday event information into our forecast.  The use of holiday event data along with external regressors was addressed in [another blog post](https://databricks.com/blog/2020/03/26/new-methods-for-improving-supply-chain-demand-forecasting.html) that may be worth reviewing should you have questions about that aspect of this work.
-# MAGIC 
+# MAGIC
 # MAGIC Given that the bulk of the code in this section is examined in more detail in the previously referenced materials, we will proceed with environment setup and forecast generation with minimal additional explanation before diving into the safety stock calculations that build upon the output of these steps: 
 
 # COMMAND ----------
@@ -189,12 +189,12 @@ def evaluate_forecast( keys, forecast_pd ):
 # COMMAND ----------
 
 # MAGIC %md Everything up to this point is a minor variation of code explained in the previously referenced blog posts and their associated notebooks.  However, this next cell introduces something a bit new: FBProphet's [model cross-validation](https://facebook.github.io/prophet/docs/diagnostics.html).
-# MAGIC 
+# MAGIC
 # MAGIC The structure of the user-defined function is not terribly different from that of the previously defined functions.  However, its goal is to calculate evaluation metrics using a cross-validation technique.  This will require the model trained in the *get_forecast* function to be retrieved.  In that function, we used mlflow to persist the model to a known location. In this function, we use mlflow to retrieve that model from that location for further evaluation. 
 # MAGIC (Please note that saving a larger number of models to */tmp* in the Databricks workspace is not recommended. Instead, use a [cloud storage container]((https://docs.databricks.com/data/databricks-file-system.html#mount-object-storage-to-dbfs) mounted to your Databricks environment to provide you access to greater storage capacity and better I/O performance.)
-# MAGIC 
+# MAGIC
 # MAGIC With the trained model in hand, we call the cross_validation function, asking it to consider the initial three years (1,095 days) of the 5 years of data used to train the original model.  Leveraging insights gathered from this initial period, the model is used to generate a forecast for a specified number of days leading up to a maximum number of days representing the forecast horizon. This work is repeated over and over as the initial dataset is moved forward in time a number of days equal to half of the horizon duration until the end of the historical dataset on which the model was originally trained is reached.
-# MAGIC 
+# MAGIC
 # MAGIC The end result of this work is a dataframe within which the actual and forecasted values so many days out from the cutoff of the training data set are known.  This dataset is then passed to the performance_metrics function to calculate standard error metrics for the model for each day moving towards the specified horizon.  With these metrics, we can evaluate our model performs as we predict further out from the end of the historical dataset on which it was trained:
 
 # COMMAND ----------
@@ -280,7 +280,7 @@ forecast_evals_cv.createOrReplaceTempView('forecast_evals_cv_tmp')
 # MAGIC CREATE DATABASE IF NOT EXISTS solacc_safety_stock;
 # MAGIC USE solacc_safety_stock;
 # MAGIC DROP TABLE IF EXISTS forecasts;
-# MAGIC 
+# MAGIC
 # MAGIC CREATE TABLE forecasts
 # MAGIC USING delta
 # MAGIC AS 
@@ -300,9 +300,9 @@ forecast_evals_cv.createOrReplaceTempView('forecast_evals_cv_tmp')
 # COMMAND ----------
 
 # MAGIC %sql -- persist forecast metrics for later use
-# MAGIC 
+# MAGIC
 # MAGIC DROP TABLE IF EXISTS forecast_evals;
-# MAGIC 
+# MAGIC
 # MAGIC CREATE TABLE forecast_evals
 # MAGIC USING delta
 # MAGIC AS SELECT * FROM forecast_evals_tmp;
@@ -310,11 +310,11 @@ forecast_evals_cv.createOrReplaceTempView('forecast_evals_cv_tmp')
 # COMMAND ----------
 
 # MAGIC %sql -- persist cross-validation metrics for later use
-# MAGIC 
+# MAGIC
 # MAGIC -- NOTE this step is time-intensive
-# MAGIC 
+# MAGIC
 # MAGIC DROP TABLE IF EXISTS forecast_evals_cv;
-# MAGIC 
+# MAGIC
 # MAGIC CREATE TABLE forecast_evals_cv
 # MAGIC USING delta
 # MAGIC AS SELECT * FROM forecast_evals_cv_tmp;
@@ -330,13 +330,13 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %md ###Step 2: Perform Safety Stock Calculations
-# MAGIC 
+# MAGIC
 # MAGIC We now have access to forecasted and actual demand for all 500 store-item combinations. Let's quickly visualize forecasted and actual demand for the combination of item 1 in store 1.  We will limit the visualization to data in calendar year 2017 for ease of interpretation:
 
 # COMMAND ----------
 
 # MAGIC %sql -- actuals vs. forecast for store 1/item 1 in 2017
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   date,
 # MAGIC   sales,
@@ -354,7 +354,7 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %sql -- percent days below and above forecast by model
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   store,
 # MAGIC   item,
@@ -370,15 +370,15 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %md Given the variability around our forecast, we can now explore how we might place orders to replenish inventory and avoid frequent stockouts.  To do this, let's consider a simple hypothetical scenario within which each store in our dataset places a replenishment order to its distributor on Sunday evening at the close of business.  The products ordered are expected to arrive from the distributor Wednesday afternoon and made available for sale to customers by the opening of business on Thursday.  The units ordered are expected to last until the close of business hours on Wednesday the following week. At that time, product units from the next replenishment order should become available.
-# MAGIC 
+# MAGIC
 # MAGIC This scenario gives us a *performance cycle* of 7 days (from Thursday to Wednesday) and a *lead time* of 3 days (Monday to Wednesday).  While individual stores typically face some measure of variability and uncertainty around lead times, we will assume no lead time variability or uncertainty in this scenario in order to keep focused on the variability in demand.
-# MAGIC 
+# MAGIC
 # MAGIC With this scenario in mind, we can align each date with a particular inventory cycle and the replenishment order date that affects its stocking levels:
 
 # COMMAND ----------
 
 # MAGIC %sql -- calculate the cycle with which each date is associated
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   store,
 # MAGIC   item,
@@ -392,13 +392,13 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %md On Sunday evening, just prior to orders being placed, we can sum the total demand expected for the 7-day period that represents the upcoming Thursday through Wednesday performance cycle. This quantity is known as our *cycle stock* and represents the quantity of product needed to address mean demand for the period:
-# MAGIC 
+# MAGIC
 # MAGIC NOTE: We will exclude cycles that span the head and tail of our dataset from further analysis to focus on cycles with which complete historical datasets are available.
 
 # COMMAND ----------
 
 # MAGIC %sql -- calculate cycle_stock
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   x.store,
 # MAGIC   x.item,
@@ -430,13 +430,13 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %md With total predicted mean demand for each cycle known, we now can turn our attention to variability.  Because we have historical data for all our predicted periods, we will **cheat** and use the actual, historical data for each cycle to derive cycle-specific demand variability.  This is a completely bogus way to do our calculations as we would never have actual demand variability for a future period of time, but we can use this here to explore how safety stock is calculated and verify that the safety stock formula would allow us to meet our service level expectations.
-# MAGIC 
+# MAGIC
 # MAGIC We will calculate safety stock as *(the number of days in the performance cycle)* *x* *(the standard deviation of the daily demand for that period)* *x* *(the z-score aligned with our service level expectation)*. If we set our service level expectation to 95%, a commonly employed service level expectation, our *z-score* is 1.6449. Given we know our cycle stock, we can add our safety stock to our cycle stock to determine the number of product units required to meet demand over the coming period given our service level goal:
 
 # COMMAND ----------
 
 # MAGIC %sql -- calculate safety stock
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   p.store,
 # MAGIC   p.item,
@@ -491,7 +491,7 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %sql -- stocking levels, store 1 and item 1 for >= 2016
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   p.store,
 # MAGIC   p.item,
@@ -547,7 +547,7 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %sql -- calculate per model service levels
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   q.store,
 # MAGIC   q.item,
@@ -609,21 +609,21 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %md ###Step 3: Revisiting the Standard Deviation of Demand
-# MAGIC 
+# MAGIC
 # MAGIC As mentioned earlier, we cheated when we performed our previous safety stock calculations.  We used knowledge of the actual demand in the future period for which we were forecasting to calculate the additional units needed to meet our service level expectations. In the real world, we would never have that knowledge and would need to estimate future variability.
-# MAGIC 
+# MAGIC
 # MAGIC One technique we could use is to calculate the variability for a past period and apply that to a future period.  This is often the technique used in spreadsheet exercises when safety stock calculations are taught in Supply Chain Management classes. But our data, as most retailer data, has a trend and seasonal patterns of variability which makes identifying a past period over which to calculate future demand variability problematic. 
-# MAGIC 
+# MAGIC
 # MAGIC Still, a few researchers in the Operations Management literature are exploring means for making these estimations.  If I'm being honest, most of the math being performed in the papers they are producing is beyond my immediate grasp, and there doesn't appear to be consensus in the field as to whether the techniques presented are the ones we should be using. 
-# MAGIC 
+# MAGIC
 # MAGIC And so we find ourselves a little stuck. But have no fear, we can use an old trick and substitute measures of model error provided in units aligned with that of the standard deviation of demand for this value.  The most commonly used of these measures are root mean squared error (RMSE) and mean absolute error (MAE).  Let's use these values now to recalculate our safety stock requirements:
-# MAGIC 
+# MAGIC
 # MAGIC NOTE Safety stock and required stock calculations based on known standard deviation of demand is kept in the results and labeled as *_perfect* for comparison purposes.
 
 # COMMAND ----------
 
 # MAGIC %sql -- calculate service levels with safety stock derived using RMSE and MAE
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   q.store,
 # MAGIC   q.item,
@@ -698,7 +698,7 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %sql -- stocking levels, store 1 and item 1 for >= 2016
-# MAGIC 
+# MAGIC
 # MAGIC   SELECT
 # MAGIC     p.store,
 # MAGIC     p.item,
@@ -762,7 +762,7 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %sql -- comparing standard deviation of demand to model-wide RMSE and MAE values
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   p.store,
 # MAGIC   p.item,
@@ -807,13 +807,13 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %md But on the whole, our model-wide RMSE and MAE values are lower than the standard deviation values we frequently observe in our data. And this makes sense as the standard deviation in the demand is a feature of the historical data while the error metrics are a feature of a model that attempts to account for this exact variation.  As our modeling techniques improve, more and more variability (up to the limit that represents white noise in the data) is expected to be accounted for so that error metrics should decline while standard deviation of demand is unaffected.
-# MAGIC 
+# MAGIC
 # MAGIC Of course, our model-wide error metrics may be a little lower than they should be given they are based on predictions made over historical data points on which our model has been trained.  To address this, we can leverage metrics derived through cross-validation over a horizon aligned with the number of days over which we are making predictions at the time we place our replenishment orders.  Given we make our orders on Sunday evening (after business hours) for a period starting the following Thursday and ending the Wednesday after that, we should examine how our models behave on a horizon of 4 to 10 days (as these days should be 4 to 10 days after that Sunday evening).  Here we can see how RMSE and MAE behave over these time horizons for item 1 in store 1:
 
 # COMMAND ----------
 
 # MAGIC %sql -- RMSE and MAE values derived over different horizons using cross-validation
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   horizon,
 # MAGIC   rmse,
@@ -831,7 +831,7 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %sql -- calculate service levels with safety stock derived using RMSE and MAE from model-wide and cross-validation calculations
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   q.store,
 # MAGIC   q.item,
@@ -926,7 +926,7 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %sql -- calculate service levels with safety stock derived using RMSE and MAE from model-wide and cross-validation calculations
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   q.store,
 # MAGIC   q.item,
@@ -1021,7 +1021,7 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %sql -- calculate service levels with safety stock derived using RMSE and MAE from model-wide and cross-validation calculations
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   p.store,
 # MAGIC   p.item,
@@ -1096,13 +1096,13 @@ holidays_broadcast.unpersist()
 # COMMAND ----------
 
 # MAGIC %md From the visualization we can see that using the Prophet prediction intervals results in a significant over-estimation of the required stock.  The reasons for this are not terribly important.  The main point of including this calculation in this notebook is to make sure those familiar with Facebook Prophet don't come to think of prediction intervals as a short-but to a solution when it comes to safety stock calculations.  (Remember, every unit of stock in inventory represents idle capital that's at risk of loss.)
-# MAGIC 
+# MAGIC
 # MAGIC So where does this leave us with regard to performing safety stock calculations? At a minimum, I hope that this exercise helps us to understand that safety stock calculations require careful consideration and that commonly adopted techniques may not deliver the results we expect. I'd encourage organizations trying to improve inventory management to review historical data and forecasting models and explore the actual service levels achieved based on calculations similar to the ones demonstrated here.  This may help organizations identify changes in their stocking practices that allow them to keep inventories manageable while still meeting their desired service levels.
 
 # COMMAND ----------
 
 # MAGIC %md ###Footnote: Setting Replenishment Quantities
-# MAGIC 
+# MAGIC
 # MAGIC We'd be remiss if we didn't point out that the stock calculations performed in this notebook do not imply that we are ordering exactly the quantities shown.  Most products that we stock will have longer than a 1-cycle shelf-life.  If demand is less than the forecasted demand 50% of the time and we are stocking for the possibility of demand to exceed that, we will be left with inventory at the end of a cycle which should carry over into the next. We need to take this into consideration as we place our replenishment orders Sunday evening.  But of course, we still have 3 days left in the current cycle so that we don't know exactly where will land come Wednesday evening.
-# MAGIC 
+# MAGIC
 # MAGIC To understand how we might take into consideration the possibility of carry-over inventory when we are placing orders mid-cycle, let's continue considering our 7-day Thursday through Wednesday cycle for which replenishment orders are placed on Sunday evening. At the time of order placement, we will still have 3 days of business remaining in the current cycle.  To account for the uncertainty around these three days, what we can do is recalculate forecasted demand and safety stock for the 10-day cycle which includes the Monday, Tuesday and Wednesday leading into the Thursday through Wednesday cycle. By subtracting the end of the day Sunday on-hand inventory from this 10-day required stock, we now have our replenishment order quantity.

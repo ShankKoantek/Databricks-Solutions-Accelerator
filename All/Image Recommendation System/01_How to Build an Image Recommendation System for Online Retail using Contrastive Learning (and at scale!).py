@@ -493,14 +493,6 @@ test = percentage_of_content(test,10)
 
 # COMMAND ----------
 
-
-
-# COMMAND ----------
-
-help(HorovodRunner)
-
-# COMMAND ----------
-
 # Start the training process and mlflow will record logged metrics and parameters
 with mlflow.start_run() as run:  
   from sparkdl import HorovodRunner
@@ -512,9 +504,8 @@ with mlflow.start_run() as run:
    
   
   # Run HorovodRunner
-#   hr = HorovodRunner(np=2, driver_log_verbosity='all')
-  hr = HorovodRunner(np=2, driver_log_verbosity='all', batch_size=32, num_partitions=4)
-
+  hr = HorovodRunner(np=2, driver_log_verbosity='all')
+#   hr = HorovodRunner(np=2, driver_log_verbosity='all', batch_size=32, num_partitions=4)
 
   hr.run(train_hvd,  train  = train, test = test, checkpoint_path=checkpoint_path, learning_rate=learning_rate)
   

@@ -135,6 +135,30 @@ test = (
 
 # COMMAND ----------
 
+# Function for taking percentage of the data
+from pyspark.sql.functions import rand
+
+# Define the percentage of the data you want to take
+def get_percentage_of_data(x_train, x_percentage):
+    # Get the number of samples in the data
+    num_samples = x_train.count()
+    
+    # Compute the number of samples to select based on the percentage
+    num_samples_selected = int(x_percentage / 100 * num_samples)
+    
+    # Select a random subset of the data
+    x_train_subset = x_train.orderBy(rand()).limit(num_samples_selected)
+    
+    return x_train_subset
+
+# COMMAND ----------
+
+train = get_percentage_of_data(train,0.001)
+valid = get_percentage_of_data(valid,0.001)
+test = get_percentage_of_data(test,0.001)
+
+# COMMAND ----------
+
 # DBTITLE 1,Cache Data for Faster Access
 # configure temp cache for petastorm files
 spark.conf.set(SparkDatasetConverter.PARENT_CACHE_DIR_URL_CONF, 'file:///dbfs/tmp/instacart_wide_deep/pstorm_cache') # the file:// prefix is required by petastorm
@@ -425,7 +449,10 @@ hparams = {
   'hidden_layer_nodes_count_decline_rate':0.5,
   'dropout_rate':0.25,
   'epochs':1,
-  'batch_size':128
+
+# shashank
+    'batch_size':1
+#   'batch_size':32
   }
 
 train_and_evaluate_model(hparams)
@@ -481,7 +508,10 @@ model = get_model(
     )
 model = tf.estimator.add_metrics(model, map_custom_metric)
 
-train_spec, eval_spec = get_data_specs(hparams['epochs'], hparams['batch_size']) 
+train_spec, eval_spec = get_data_specs(
+    hparams['epochs'], 
+    hparams['batch_size']
+) 
 
 results = tf.estimator.train_and_evaluate(model, train_spec, eval_spec)
 
@@ -493,6 +523,12 @@ results[0]
 # COMMAND ----------
 
 # MAGIC %md Using our test data, which the model did not see during hyperparameter tuning, we can better assess model performance.  Our test data, also stored in Petastorm, requires access to a function to re-organize it for evaluation.  In addition, we need to explicitly define the number of data steps over which the data should be evaluated (or the evaluation step will run indefinitely): 
+
+# COMMAND ----------
+
+# steps = int(test_pstorm.dataset_size/batch_size)
+# test_pstorm.dataset_size
+batch_size
 
 # COMMAND ----------
 
@@ -522,7 +558,7 @@ steps = int(test_pstorm.dataset_size/batch_size)
 test_ds = test_pstorm.make_tf_dataset(batch_size=batch_size)
 
 # evaulate against test data
-results = model.evaluate(get_input_fn(test_ds), steps=steps)
+results = model.evaluate(get_input_fn(test_ds), steps=1)
 
 # COMMAND ----------
 
@@ -562,6 +598,10 @@ saved_model_path = model.export_saved_model(
     export_dir_base='/dbfs/tmp/exported_model',
     serving_input_receiver_fn=fn
     ).decode("utf-8")
+
+# COMMAND ----------
+
+dbutils.fs.ls("/tmp/exported_model")
 
 # COMMAND ----------
 
@@ -644,11 +684,37 @@ model_name='recommender'
 
 # COMMAND ----------
 
+!pip install --upgrade mlflow
+!pip install --upgrade tensorflow
+
+# COMMAND ----------
+
 import tensorflow as tf
 import mlflow
 
 print(tf. __version__) 
 print(mlflow.__version__)
+
+# COMMAND ----------
+
+import mlflow.tensorflow
+
+help(mlflow.tensorflow.log_model)
+
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+mlflow.tensorflow.log_model(
+    saved_model_dir=saved_model_path, 
+    signature_def_key=tf_signature_def_key,
+    artifact_path='model',
+    conda_env=conda_env
+)
+
 
 # COMMAND ----------
 

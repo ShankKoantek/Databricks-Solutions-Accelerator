@@ -45,15 +45,15 @@ if 'config' not in locals():
 # Shashank Sharma
 
 # iot_device_connection_string
-# HostName=accelerator-iot.azure-devices.net;DeviceId=accelerator-device;SharedAccessKey=JGP9hz1qHcOf6ysIW8l/IWFpSVzXv7vwpUyBgC7c/DE=
+# HostName=accelerator-iot.azure-devices.net;DeviceId=accelerator-device;SharedAccessKey=4QuysfRRKYo5aDIKQ9EVwOsL3cU3iSfIBxIZL6cRXDE=
 
 # event_hub_compatible_endpoint
-# Endpoint=sb://ihsuprodblres019dednamespace.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=VDM8RlhZFf4nTbGnT+xkBlMXcAjr+ti2nTh8nD0u4lo=;EntityPath=iothub-ehub-accelerato-24989749-d93d9d81a5
+# Endpoint=sb://iothub-ns-accelerato-24989925-00ccc29d0b.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=t9B5/66u3BfZDPBpRrFRlv3bpXWyx0nUuqIcaeX0tOY=;EntityPath=accelerator-iot
 
 
-config['iot_device_connection_string'] = "HostName=accelerator-iot.azure-devices.net;DeviceId=accelerator-device;SharedAccessKey=JGP9hz1qHcOf6ysIW8l/IWFpSVzXv7vwpUyBgC7c/DE="
+config['iot_device_connection_string'] = "HostName=accelerator-iot.azure-devices.net;DeviceId=accelerator-device;SharedAccessKey=4QuysfRRKYo5aDIKQ9EVwOsL3cU3iSfIBxIZL6cRXDE="
 
-config['event_hub_compatible_endpoint'] = "Endpoint=sb://ihsuprodblres019dednamespace.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=VDM8RlhZFf4nTbGnT+xkBlMXcAjr+ti2nTh8nD0u4lo=;EntityPath=iothub-ehub-accelerato-24989749-d93d9d81a5" 
+config['event_hub_compatible_endpoint'] = "Endpoint=sb://iothub-ns-accelerato-24989925-00ccc29d0b.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=t9B5/66u3BfZDPBpRrFRlv3bpXWyx0nUuqIcaeX0tOY=;EntityPath=accelerator-iot" 
 
 # COMMAND ----------
 

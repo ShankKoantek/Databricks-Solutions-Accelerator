@@ -9,15 +9,15 @@
 # COMMAND ----------
 
 # MAGIC %md ## Introduction
-# MAGIC 
+# MAGIC
 # MAGIC The initial Zingg workflow consists of two primary steps plus one additional step that is often performed to initialize the environment.  These three steps are:</p>
-# MAGIC 
+# MAGIC
 # MAGIC 1. Label Training Data
 # MAGIC 2. Train Model on Labeled Data
 # MAGIC 3. Perform Initial Deduplication
-# MAGIC 
+# MAGIC
 # MAGIC The end result of this workflow is a trained model and tables capturing which records in the initial dataset match with each other. 
-# MAGIC 
+# MAGIC
 # MAGIC Each of the three steps is facilitated by a separate job that was setup in the *ER Setup 02* notebook.  If you haven't successfully run that notebook (as well as the *ER Setup 01* notebook), please do so before proceeding with this one.
 
 # COMMAND ----------
@@ -52,9 +52,9 @@ from tabulate import tabulate
 # COMMAND ----------
 
 # MAGIC %md ##Step 0: Setup Helper Functions & Widget
-# MAGIC 
+# MAGIC
 # MAGIC As mentioned in the *ER Setup 00* notebook, Zingg provides building block components for the construction of an entity-resolution workflow application.  To keep things simple, we will attempt to emulate an application workflow from within this notebook, recognizing that most applications would provide users with a specialized client UI for the labeling and data interpretation work performed here.
-# MAGIC 
+# MAGIC
 # MAGIC To assist us in implementing an in-notebook experience, we'll define a few helper functions now:
 
 # COMMAND ----------
@@ -209,11 +209,11 @@ dbutils.widgets.dropdown('label', 'Uncertain', available_labels.keys(), 'Is this
 # COMMAND ----------
 
 # MAGIC %md ##Step 1: Label Training Data
-# MAGIC 
+# MAGIC
 # MAGIC With our helper function in place, we can now implement the first step of the initial workflow.  Within this step, Zingg will read an initial set of input data and from it generate a set of record pairs that it believes may be duplicates.  As "expert data reviewers", we will review each pair and label it as either a *Match* or *No Match*.  (We may also label it as *Uncertain* if we cannot determine if the records are a match.)  The labeled data will be persisted to facilitate the model training step that follows.</p>
-# MAGIC 
+# MAGIC
 # MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/er_findtrainingdata_dataflow.png' width=800>
-# MAGIC 
+# MAGIC
 # MAGIC The Zingg job called for this step is *zingg_initial_findTrainingData*.  This job uses a set of *blocking* techniques to identify potential duplicates in the initial dataset.  Some techniques work better than others so as you perform the multiple cycles of candidate pair generation and labeling required before we can proceed to model training, you will notice some candidate pairs suggestions are better than others.  It is common that the quality of the suggestions ebbs and flows as you move through various pair generation cycles.  Please understand that this is part of the process by which Zingg learns.
 
 # COMMAND ----------
@@ -228,7 +228,7 @@ if True:
 # COMMAND ----------
 
 # MAGIC %md To get started, we generate our candidate pairs:
-# MAGIC 
+# MAGIC
 # MAGIC **NOTE** This step will trigger the *zingg_initial_findTrainingData* job only if no unlabeled pairs exist from prior runs. If unlabeled pairs exist from prior runs, the routine will return those to be labeled before triggering the job.  Because different algorithms are used to identify potential duplicates between runs, some instances of the will run noticeably longer than others.
 
 # COMMAND ----------
@@ -255,9 +255,9 @@ print('{0} candidate pairs found for labeling'.format(len(z_clusters)))
 # COMMAND ----------
 
 # MAGIC %md With candidate pairs now available for labeling, we are presented with one pair at a time and are tasked with using the drop-down widget at the top of this notebook to assign a label to each one.  As you consider each pair, remember that pairs with a shared *recid* values are definitely duplicates but some duplicates may exist for which the *recid* values differ. (Per our job configurations, the *recid* field is not used for record matching.)
-# MAGIC 
+# MAGIC
 # MAGIC Once the widget reflects your label assignment, re-run the cell to assign the label and bring up the next pair:
-# MAGIC 
+# MAGIC
 # MAGIC **NOTE** Changing the value of the widget will trigger the following cell to re-execute.  You can disable this functionality by clicking ion the settings icon in the widget bar and changing *On Widget Change* to *Do Nothing*.
 
 # COMMAND ----------
@@ -334,42 +334,42 @@ display(marked_pd)
 # COMMAND ----------
 
 # MAGIC %md Should you have any mislabeled pairs, simply run the following with the appropriate substitutions for each pair you wish to correct:
-# MAGIC 
+# MAGIC
 # MAGIC ```
-# MAGIC 
+# MAGIC
 # MAGIC # set values here
 # MAGIC z_cluster = 'Z_CLUSTER VALUE ASSOCIATED WITH PAIR TO RELABEL'
 # MAGIC new_label = available_labels['VALUE FROM WIDGET DROP DOWN TO ASSIGN']
-# MAGIC 
-# MAGIC 
+# MAGIC
+# MAGIC
 # MAGIC # read existing data
 # MAGIC marked_pd = pd.read_parquet(
 # MAGIC       '/dbfs'+ MARKED_DIR, 
 # MAGIC       engine='pyarrow'
 # MAGIC        )
-# MAGIC 
+# MAGIC
 # MAGIC # assign new label
 # MAGIC marked_pd.loc[ marked_pd['z_cluster']==z_cluster, 'z_isMatch'] = label
-# MAGIC 
+# MAGIC
 # MAGIC # delete old records
 # MAGIC dbutils.fs.rm(MARKED_DIR, recurse=True)
 # MAGIC dbutils.fs.mkdirs(MARKED_DIR)
-# MAGIC 
+# MAGIC
 # MAGIC # write updated records
 # MAGIC marked_pd.to_parquet(
 # MAGIC    '/dbfs' + MARKED_DIR +'/markedRecords_'+ str(time.time_ns()/1000) + '.parquet', 
 # MAGIC     compression='snappy',
 # MAGIC     index=False # do not include index
 # MAGIC     )
-# MAGIC 
+# MAGIC
 # MAGIC ```
 
 # COMMAND ----------
 
 # MAGIC %md ## Step 2: Train Model on Labeled Data
-# MAGIC 
+# MAGIC
 # MAGIC To train the model against the labeled pairs, we simply kickoff the *zingg_initial_train* job which call's Zingg's *train* logic.  In this job, the labeled pairs are used to train a model which scores candidate pairs (generated by Zingg in later stages) for the probability of a match:</p>
-# MAGIC 
+# MAGIC
 # MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/er_train_workflow2.png' width=500>
 
 # COMMAND ----------
@@ -381,15 +381,15 @@ train_job.run_and_wait()
 # COMMAND ----------
 
 # MAGIC %md ## Step 3: Perform Initial Deduplication
-# MAGIC 
+# MAGIC
 # MAGIC Using the trained model, we can examine the initial dataset to identify clusters of records.  A cluster is a group of records that are believed to be duplicates of one another.  The Zingg *match* logic combines both blocking and candidate pair scoring to generate the clustered results:</p>
-# MAGIC 
+# MAGIC
 # MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/er_initial_match3.png' width=800>
-# MAGIC 
+# MAGIC
 # MAGIC **NOTE** Given the volume of initial data and the scale of the Databricks cluster assigned to the *match* job, this step may take a while to run.
-# MAGIC 
+# MAGIC
 # MAGIC Once the matched data are generated, we will capture the output to a set of tables that will enable incremental processing. This table structure is as follows:</p>
-# MAGIC 
+# MAGIC
 # MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/er_schema.png' width=200>
 
 # COMMAND ----------
@@ -432,7 +432,7 @@ display(spark.table('matches'))
 
 # DBTITLE 1,Examine Number of Clusters by Record Count
 # MAGIC %sql
-# MAGIC 
+# MAGIC
 # MAGIC SELECT
 # MAGIC   record_count,
 # MAGIC   COUNT(z_cluster) as clusters
@@ -449,7 +449,7 @@ display(spark.table('matches'))
 # COMMAND ----------
 
 # MAGIC %md A review the number of clusters by cluster member count shows that the majority of our clusters are believed to contain just a few duplicate records. However,  there are quite a few clusters with a large number of records associated with them.  It might be worth examining these to understand what may be happening here but it's important to keep in mind that we never expect perfection from our model.  If we feel our model could be better at defining clusters, it's important we return to the labeling phase of our work and then re-train and re-match our data.
-# MAGIC 
+# MAGIC
 # MAGIC With that in mind, it would be helpful if Zingg provided some high-level metrics and diagnostics to help us understand the performance of our model.  The reality is that outside of evaluation scenarios where we may have some form of ground-truth against to evaluate our results, its very difficult to clearly identify the precision of a model such as this.  Quite often, the best we can do is review the results and make a judgement call based on the volume of identifiable errors and the patterns associated with those errors to develop a sense of whether our model's performance is adequate for our needs.
 
 # COMMAND ----------
@@ -460,9 +460,9 @@ display(spark.table('matches'))
 
 # DBTITLE 1,Create Table Structures
 # MAGIC %sql
-# MAGIC 
+# MAGIC
 # MAGIC DROP TABLE IF EXISTS clusters;
-# MAGIC 
+# MAGIC
 # MAGIC CREATE TABLE IF NOT EXISTS clusters (
 # MAGIC   cluster_id bigint GENERATED ALWAYS AS IDENTITY,
 # MAGIC   z_cluster string
@@ -470,7 +470,7 @@ display(spark.table('matches'))
 # MAGIC   USING DELTA;
 # MAGIC   
 # MAGIC DROP TABLE IF EXISTS cluster_members;
-# MAGIC 
+# MAGIC
 # MAGIC CREATE TABLE IF NOT EXISTS cluster_members (
 # MAGIC   cluster_id integer,
 # MAGIC   givenname string,
@@ -528,18 +528,18 @@ display(spark.table('cluster_members').orderBy('cluster_id'))
 # COMMAND ----------
 
 # MAGIC %md Of course, we may have some clusters we might want to manually correct.  Using standard DELETE, UPDATE and INSERT statements, we can update the delta lake formatted tables in this environment to achieve the results we require.  If we create new clusters to which to assign users as part of a manual correction, we might create a new entry in the *clusters* table by simply inserting a value as follows:
-# MAGIC 
+# MAGIC
 # MAGIC ```
 # MAGIC import uuid
-# MAGIC 
+# MAGIC
 # MAGIC # create new entry
 # MAGIC guid= str(uuid.uuid4())
 # MAGIC _ = spark.sql(f"INSERT INTO clusters (z_cluster) VALUES('{guid}')")
-# MAGIC 
+# MAGIC
 # MAGIC # get cluster id for new entry
 # MAGIC cluster_id = spark.sql(f"SELECT cluster_id FROM clusters WHERE z_cluster='{guid}'").collect()[0]['cluster_id']
 # MAGIC print(f"New z_cluster '{guid}' created with cluster_id of {cluster_id}")
-# MAGIC 
+# MAGIC
 # MAGIC ```
 
 # COMMAND ----------
@@ -549,9 +549,9 @@ display(spark.table('cluster_members').orderBy('cluster_id'))
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC &copy; 2022 Databricks, Inc. All rights reserved. The source in this notebook is provided subject to the [Databricks License](https://databricks.com/db-license-source).  All included or referenced third party libraries are subject to the licenses set forth below.
-# MAGIC 
+# MAGIC
 # MAGIC | library                                | description             | license    | source                                              |
 # MAGIC |----------------------------------------|-------------------------|------------|-----------------------------------------------------|
 # MAGIC | zingg                                  | entity resolution library | GNU Affero General Public License v3.0    | https://github.com/zinggAI/zingg/                       |
