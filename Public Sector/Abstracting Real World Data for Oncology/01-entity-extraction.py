@@ -17,7 +17,7 @@
 # MAGIC - Relations between internal body part and procedures.
 # MAGIC - Analysis of procedures used on oncological events.
 # MAGIC - Checking assertion status of oncological findings.
-# MAGIC 
+# MAGIC
 # MAGIC Please use a cluster with **9.1 ML CPU** Runtime.
 
 # COMMAND ----------
@@ -104,7 +104,7 @@ display(dbutils.fs.ls(notes_path),10)
 
 # MAGIC %md
 # MAGIC ### Read Data and Write to Bronze Delta Layer
-# MAGIC 
+# MAGIC
 # MAGIC There are 50 clinical notes stored in delta table. We read the data nd write the raw notes data into bronze delta tables
 
 # COMMAND ----------
@@ -229,7 +229,7 @@ ner_model = ner_pipeline.fit(empty_data)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC Now we will visualize a sample text with `NerVisualizer`. Since `NerVisualizer` woks with Lightpipeline, so we will create a `light_model` with our `ner_model_model`.
 
 # COMMAND ----------
@@ -253,9 +253,9 @@ displayHTML(ner_vis)
 
 # COMMAND ----------
 
-# MAGIC 
-# MAGIC 
-# MAGIC 
+# MAGIC
+# MAGIC
+# MAGIC
 # MAGIC %md
 # MAGIC ## 1. ICD-10 code extraction
 # MAGIC In this step we get ICD-10 codes using entity resolvers and use the data for various use cases.
@@ -394,7 +394,7 @@ display(icd10_hcc_df.limit(10))
 
 # MAGIC %md
 # MAGIC ### Preparing reimbursement-ready data with billable codes
-# MAGIC 
+# MAGIC
 # MAGIC Here, we will check how many of the ICD codes are billable.
 
 # COMMAND ----------
@@ -512,7 +512,7 @@ display(best_icd_mapped_df.limit(10))
 
 # MAGIC %md
 # MAGIC ## 2. Get Drug codes from the notes
-# MAGIC 
+# MAGIC
 # MAGIC We will create a new pipeline to get drug codes. As NER model, we are using `ner_posology_large` and setting NerConverter's WhiteList `['DRUG']` in order to get only drug entities.
 
 # COMMAND ----------
@@ -544,7 +544,7 @@ rxnorm_ner_model = pipeline_rxnorm_ingredient.fit(data_ner)
 
 # MAGIC %md
 # MAGIC ### Visualize Drug Entities
-# MAGIC 
+# MAGIC
 # MAGIC Now we will visualize a sample text with `NerVisualizer`.
 
 # COMMAND ----------
@@ -818,7 +818,7 @@ display(rxnorm_code_greedy_res_df.limit(10))
 
 # MAGIC %md
 # MAGIC ## 3. Get Timeline Using RE Models
-# MAGIC 
+# MAGIC
 # MAGIC We will create a relation extraction model to identify temporal relationships among clinical events by using pretrained **RelationExtractionModel** `re_temporal_events_clinical`.
 
 # COMMAND ----------
@@ -897,7 +897,7 @@ temporal_re_df_silver.write.format('delta').mode("overwrite").save(f"{delta_path
 
 # MAGIC %md
 # MAGIC ## 4. Relations Between Body Parts and Procedures
-# MAGIC 
+# MAGIC
 # MAGIC We will create a relation extraction model to identify relationships between body parts and problem entities by using pretrained **RelationExtractionModel** `re_bodypart_problem`.
 
 # COMMAND ----------
@@ -975,7 +975,7 @@ display(bodypart_re_df.limit(10))
 
 # MAGIC %md
 # MAGIC ## 5. Get Procedure codes from notes
-# MAGIC 
+# MAGIC
 # MAGIC We will create a new pipeline to get procedure codes. As NER model, we are using `jsl_ner_wip_greedy_clinical` and setting NerConverter's WhiteList `['Procedure']` in order to get only drug entities.
 
 # COMMAND ----------
@@ -1089,7 +1089,7 @@ cpt_df.write.format('delta').mode('overwrite').save(f"{delta_path}/silver/cpt")
 
 # MAGIC %md
 # MAGIC ## 6. Get Assertion Status of Cancer Entities
-# MAGIC 
+# MAGIC
 # MAGIC We will create a new pipeline to get assertion status of cancer entities procedure codes. As NER model, we are using `jsl_ner_wip_greedy_clinical`.
 
 # COMMAND ----------
@@ -1168,7 +1168,7 @@ assertion_df.write.format('delta').mode('overwrite').save(f'{delta_path}/silver/
 # MAGIC %md
 # MAGIC ## License
 # MAGIC Copyright / License info of the notebook. Copyright [2021] the Notebook Authors.  The source in this notebook is provided subject to the [Apache 2.0 License](https://spdx.org/licenses/Apache-2.0.html).  All included or referenced third party libraries are subject to the licenses set forth below.
-# MAGIC 
+# MAGIC
 # MAGIC |Library Name|Library License|Library License URL|Library Source URL| 
 # MAGIC | :-: | :-:| :-: | :-:|
 # MAGIC |Pandas |BSD 3-Clause License| https://github.com/pandas-dev/pandas/blob/master/LICENSE | https://github.com/pandas-dev/pandas|
@@ -1180,7 +1180,7 @@ assertion_df.write.format('delta').mode('overwrite').save(f'{delta_path}/silver/
 # MAGIC |Pillow (PIL) | HPND License| https://github.com/python-pillow/Pillow/blob/master/LICENSE | https://github.com/python-pillow/Pillow/|
 # MAGIC |Spark NLP for Healthcare|[Proprietary license - John Snow Labs Inc.](https://www.johnsnowlabs.com/spark-nlp-health/) |NA|NA|
 # MAGIC |Spark OCR |[Proprietary license - John Snow Labs Inc.](https://nlp.johnsnowlabs.com/docs/en/ocr) |NA|NA|
-# MAGIC 
+# MAGIC
 # MAGIC |Author|
 # MAGIC |-|
 # MAGIC |Databricks Inc.|

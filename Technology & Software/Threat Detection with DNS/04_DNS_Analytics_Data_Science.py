@@ -9,7 +9,7 @@
 # MAGIC In this section we will build the DGA model and the typosquatting model. Slides below have some high level discussion on DGA.  
 # MAGIC - A detailed discussion on DGA is here: http://www.covert.io/getting-started-with-dga-research/
 # MAGIC - A more detailed discussion on typosquatting is here: https://www.mcafee.com/blogs/consumer/what-is-typosquatting/
-# MAGIC 
+# MAGIC
 # MAGIC At a high level we will:
 # MAGIC - Extract the domain names from the data removing gTLD (e.g. .com, .org) and ccTLD (e.g. .ru, cn, .uk, .ca)
 # MAGIC - Build the models 
@@ -174,7 +174,7 @@ all_domains['word_grams']= dict_counts * dict_vc.transform(all_domains['domain']
 
 # MAGIC %md
 # MAGIC ## Build a vectorized model of the n-grams
-# MAGIC 
+# MAGIC
 # MAGIC We need vectors for building the model
 
 # COMMAND ----------
@@ -278,11 +278,11 @@ vc_model.predict(mlflow.pyfunc.PythonModel, '7ydbdehaaz')
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC ## What problems can you spot with that model? How we can improve this model?
-# MAGIC 
+# MAGIC
 # MAGIC **How would you approach to this problem?**
-# MAGIC 
+# MAGIC
 # MAGIC For example:
 # MAGIC * domain registration/update/expiration date ?
 # MAGIC * information about DNS registrant ?

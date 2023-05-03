@@ -108,7 +108,7 @@ select * from ICD10_HCC
 -- MAGIC %md
 -- MAGIC ## License
 -- MAGIC Copyright / License info of the notebook. Copyright [2021] the Notebook Authors.  The source in this notebook is provided subject to the [Apache 2.0 License](https://spdx.org/licenses/Apache-2.0.html). 
--- MAGIC 
+-- MAGIC
 -- MAGIC |Author|
 -- MAGIC |-|
 -- MAGIC |Databricks Inc.|

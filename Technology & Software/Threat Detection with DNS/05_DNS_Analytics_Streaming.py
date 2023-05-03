@@ -68,7 +68,7 @@ df.createOrReplaceTempView("dns_latest_stream")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC 
+# MAGIC
 # MAGIC SELECT * FROM dns_latest_stream  WHERE isioc = 'ioc'
 
 # COMMAND ----------

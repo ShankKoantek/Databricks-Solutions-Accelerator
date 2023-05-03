@@ -9,22 +9,22 @@
 # MAGIC There are a number of datasets from various sources we used to explore their affects on vacination rates of COVID-19. 
 # MAGIC The datasets include population, income, education, poverty, health traits and more at a county level
 # MAGIC Many of the files needed some level of data cleansing before they can be used. We applied these transformations and created the silver layer and share cleansed tables using deltashare.
-# MAGIC 
+# MAGIC
 # MAGIC Having access to the data, now we simply create a database based on these cleaned datasets and start with our analysis.
-# MAGIC 
+# MAGIC
 # MAGIC As an example of the pre-processing steps, to create the `Income` table, we first clean up the FIPS field as part initial importing:
 # MAGIC ```
 # MAGIC from pyspark.sql.functions import regexp_replace, trim
 # MAGIC from pyspark.sql.types import  StructType   
 # MAGIC import json
 # MAGIC new_schema = StructType.fromJson(json.loads(incomeSchema))
-# MAGIC 
+# MAGIC
 # MAGIC dfIncome = spark.read.csv(storageBase + "/all_counties_income.csv", header=True, schema=new_schema) \
 # MAGIC   .filter("Description ='Per capita personal income (dollars) 2/'") \
 # MAGIC   .withColumn("GeoFIPS",regexp_replace('GeoFIPS','"',"")) \
 # MAGIC   .withColumn("GeoFIPS",regexp_replace('GeoFIPS',' ',""))
 # MAGIC ```
-# MAGIC 
+# MAGIC
 # MAGIC Similarly we created education, health, pverty and vaccination tables in the bronze layer.
 
 # COMMAND ----------

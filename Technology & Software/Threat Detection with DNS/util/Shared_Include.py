@@ -60,7 +60,7 @@ spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
 # MAGIC # We will extract the registered_domain_extract and domain_extract fields from the URLHaus feeds.
 # MAGIC import tldextract
 # MAGIC import numpy as np
-# MAGIC 
+# MAGIC
 # MAGIC def registered_domain_extract(uri):
 # MAGIC     ext = tldextract.extract(uri)
 # MAGIC     if (not ext.suffix):
@@ -74,7 +74,7 @@ spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
 # MAGIC         return " "
 # MAGIC     else:
 # MAGIC         return ext.domain
-# MAGIC 
+# MAGIC
 # MAGIC #The next three lines are registering our user defined functions(UDF) in the Databricks runtime environment 
 # MAGIC registered_domain_extract = spark.udf.register("registered_domain_extract", registered_domain_extract)
 # MAGIC domain_extract_udf = spark.udf.register("domain_extract", domain_extract)

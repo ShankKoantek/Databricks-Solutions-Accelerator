@@ -6,7 +6,7 @@
 
 // MAGIC %md
 // MAGIC ### Cluster Set Up
-// MAGIC 
+// MAGIC
 // MAGIC * Make sure [the Smolder jar file](https://amir-hls.s3.us-east-2.amazonaws.com/public/263572c0_25a1_46ce_9009_2ae456966ea9-smolder_2_12_0_0_1_SNAPSHOT-615ef.jar) is attached to your cluster: If you run the `RUNME` file in this folder, the cluster setup is automated and a Workflow and a `smolder_cluster` is created for you. Feel free to try running this notebook using the Workflow. Alternatively, install [the Smolder jar file](https://amir-hls.s3.us-east-2.amazonaws.com/public/263572c0_25a1_46ce_9009_2ae456966ea9-smolder_2_12_0_0_1_SNAPSHOT-615ef.jar) to the `smolder_cluster` cluster and attach this notebook to run interactively.
 // MAGIC * If you run this notebook with the "Run All" option, the last block terminates the streams for you. If you opt to run this notebook block by block, *make sure to cancel your streaming commands, otherwise your cluster will not autoterminate*. 
 
@@ -52,9 +52,9 @@ display(
 // COMMAND ----------
 
 // MAGIC %md
-// MAGIC 
+// MAGIC
 // MAGIC ## Define HL7 helper functions
-// MAGIC 
+// MAGIC
 // MAGIC HL7 uses an interesting set of delimiters to split records. These are helper functions for working with HL7 messages. These should eventually move inside of Smolder.
 
 // COMMAND ----------
@@ -73,11 +73,11 @@ def subfield(col: Column, subfield: Int): Column = {
 // COMMAND ----------
 
 // MAGIC %md
-// MAGIC 
+// MAGIC
 // MAGIC ## Find high utilizers
-// MAGIC 
+// MAGIC
 // MAGIC Now, we'll extract the patient identifiers and hospitals that people are visiting, to get a visualization showing high utilizers.
-// MAGIC 
+// MAGIC
 // MAGIC Note, there are a lot of small files, so reading the HL7 messages from cloud storage is slow due to the high cost of many small reads.
 
 // COMMAND ----------
@@ -192,7 +192,7 @@ Thread.sleep(120000)
 // MAGIC * Near real-time query and analytics of streaming data
 // MAGIC * Easily stream into a persisted Delta table
 // MAGIC * Leverage Delta functionality for auditability and reproducibility 
-// MAGIC 
+// MAGIC
 // MAGIC Now let's gracefully terminate the streaming queries after a few minutes.
 
 // COMMAND ----------
@@ -206,7 +206,7 @@ for (s <- spark.streams.active) {
 
 // MAGIC %md
 // MAGIC Copyright / License info of the notebook. Copyright Databricks, Inc. [2021].  The source in this notebook is provided subject to the [Databricks License](https://databricks.com/db-license-source).  All included or referenced third party libraries are subject to the licenses set forth below.
-// MAGIC 
+// MAGIC
 // MAGIC |Library Name|Library License|Library License URL|Library Source URL| 
 // MAGIC | :-: | :-:| :-: | :-:|
 // MAGIC | Spark|Apache-2.0 License | https://github.com/apache/spark/blob/master/LICENSE | https://github.com/apache/spark  |
@@ -217,5 +217,5 @@ for (s <- spark.streams.active) {
 // MAGIC %md
 // MAGIC ## Disclaimers
 // MAGIC Databricks Inc. (“Databricks”) does not dispense medical, diagnosis, or treatment advice. This Solution Accelerator (“tool”) is for informational purposes only and may not be used as a substitute for professional medical advice, treatment, or diagnosis. This tool may not be used within Databricks to process Protected Health Information (“PHI”) as defined in the Health Insurance Portability and Accountability Act of 1996, unless you have executed with Databricks a contract that allows for processing PHI, an accompanying Business Associate Agreement (BAA), and are running this notebook within a HIPAA Account. Please note that if you run this notebook within Azure Databricks, your contract with Microsoft applies.
-// MAGIC 
+// MAGIC
 // MAGIC All names have been synthetically generated, and do not map back to any actual persons or locations

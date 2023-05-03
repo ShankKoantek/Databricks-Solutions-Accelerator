@@ -2,10 +2,10 @@
 # MAGIC %md-sandbox
 # MAGIC # Advanced Analytics: Covid Outcomes Analysis
 # MAGIC <img src="https://github.com/QuentinAmbard/databricks-demo/raw/main/hls/resources/dbinterop/hls-dbiginte-flow-5.png" width="700px"  style="float: right; margin-left: 10px" />
-# MAGIC 
+# MAGIC
 # MAGIC In this notebook, we demonstrate how databricks lakehouse platform can be used for exploratory data science and explainable AI.
 # MAGIC In this example we focus on Covid outcomes and explore different factors, such as SDOH and disease history and thier impact on outcomes.
-# MAGIC 
+# MAGIC
 # MAGIC To this end, we first create cohorts corresponding to features under consideration and then explore correlations among different features as well as correlation between each feature and the outcome under study.
 
 # COMMAND ----------
@@ -13,7 +13,7 @@
 # MAGIC %md-sandbox
 # MAGIC ### 1. Cohort definition
 # MAGIC To ensure better reproducibility and data organization, we first create patient cohorts based on the criteria of interest (being admitted to hospital, infection status, disease history etc). We then proceed to create features based on cohorts and add the results to databricks feature store.
-# MAGIC 
+# MAGIC
 # MAGIC To make data access easier we add cohort tables to our database (similar to OMOP's results schema). See [The Book Of OHDSI](https://ohdsi.github.io/TheBookOfOhdsi/CommonDataModel.html#cdm-standardized-tables) for more detail.
 
 # COMMAND ----------
@@ -60,7 +60,7 @@ sql(f'describe schema {COHORT_SCHEMA_NAME}').display()
 
 # MAGIC %md
 # MAGIC #### Creating the cohorts
-# MAGIC 
+# MAGIC
 # MAGIC We can now run simple SQL queries create the cohort and fill the `cohort` and `cohort_definition`. To make cohort creation simpler (and re-usable) we can define functions that create cohorts, given a set of parameters such as inclusion/exclusion criteria. 
 
 # COMMAND ----------
@@ -128,13 +128,13 @@ covid_admissions_df.selectExpr('100*avg(is_admitted) as percent_admitted').displ
 
 # MAGIC %md
 # MAGIC ### 2. Analyze correlation between different factors in our cohorts
-# MAGIC 
+# MAGIC
 # MAGIC Now let's take a deeper look into the correlations between different factors. 
-# MAGIC 
+# MAGIC
 # MAGIC To do that, we'll add disease history and SDOH information to our patient cohort
-# MAGIC 
+# MAGIC
 # MAGIC To simplify downstream analysis, we'll flatten the patient conditions and add 1 column per condition (`True` or `False`)
-# MAGIC 
+# MAGIC
 # MAGIC *Note: here, we directly create a dataset of disease and SDOH histories, represented as binary values. Alternatively, for each condition and a given timeframe, you can add a cohort of patients, having had that condition and add to the cohort table.*
 
 # COMMAND ----------
@@ -172,9 +172,9 @@ display(patient_history_df)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC To conduct a complete analysis we look at the [mutual information](https://en.wikipedia.org/wiki/Mutual_information) between different features in our dataset. 
-# MAGIC 
+# MAGIC
 # MAGIC To calculate mutual information we use [`normalized_mutual_info_score`](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.normalized_mutual_info_score.html) from `sklearn`.
 
 # COMMAND ----------
@@ -214,20 +214,20 @@ plot_pdf.style.background_gradient(cmap='Blues').format(precision=2)
 
 # MAGIC %md
 # MAGIC Looking at the table above, we see that the highest correlation is between **hospital admissions** and **hypertension**, followed by **coronary-heart-disease**, which seems consistent with the factors taken into account in the synthea module for covid infections. 
-# MAGIC 
+# MAGIC
 # MAGIC On the SDOH side, we see high correlations with part-time employment status. However, we also see high correlation with criminal records which can be example of a spurious correlation due to small sample size (100).
 
 # COMMAND ----------
 
 # MAGIC %md-sandbox
-# MAGIC 
+# MAGIC
 # MAGIC ## 3. Advanced analytics: Predicting the risk of being admitted with COVID
 # MAGIC <img src="https://github.com/QuentinAmbard/databricks-demo/raw/main/hls/resources/dbinterop/hls-dbiginte-flow-6.png" width="700px"  style="float: right; margin-left: 10px" />
-# MAGIC 
+# MAGIC
 # MAGIC As a next step, we'll train binary classifier to predict the outcome (`is_admitted`) based on the features provided in the training data.
-# MAGIC 
+# MAGIC
 # MAGIC This model will predict the likelihood of being admitted and will help us understanding which feature has the most impact for the model globally but also each patient.
-# MAGIC 
+# MAGIC
 # MAGIC We'll use our previous cohort to run this analysis:
 
 # COMMAND ----------
@@ -239,11 +239,11 @@ display(cohort_training)
 
 # MAGIC %md-sandbox
 # MAGIC ### 3.1. Training our model, leveraging MLFlow and AutoML
-# MAGIC 
+# MAGIC
 # MAGIC We'll train a simple `XGBClassifier` on our model, trying to predict the `is_admitted`.
-# MAGIC 
+# MAGIC
 # MAGIC We'll leverage Databricks ML capabilities, including MLFlow to track all our experimentation out of the box, providing among other traceability and reproducibility.
-# MAGIC 
+# MAGIC
 # MAGIC Note that to accelerate the model creation, we could also have use [Databricks Auto-ML](https://www.databricks.com/product/automl), producing a state of the art notebook with a model ready to be used. <br/>
 # MAGIC This typically saves days while providing best practices to the team.
 
@@ -284,13 +284,13 @@ with mlflow.start_run() as run:
 
 # MAGIC %md
 # MAGIC ### 3.2 Model Analysis
-# MAGIC 
+# MAGIC
 # MAGIC <img src="https://github.com/QuentinAmbard/databricks-demo/raw/main/hls/resources/dbinterop/hls-dbiginte-flow-7.png" width="700px"  style="float: right; margin-left: 10px" />
-# MAGIC 
+# MAGIC
 # MAGIC Our model is now trained. Open the right Experiment menu to access MLFlow UI and the model saved in the registry.
-# MAGIC 
+# MAGIC
 # MAGIC Using this model, we can predict the probability of a patient being admitted and analyze which features are important to determine that.
-# MAGIC 
+# MAGIC
 # MAGIC We'll explain the feature importance in our model and visualize the feature impact on the predictions.
 
 # COMMAND ----------
@@ -304,7 +304,7 @@ shap.summary_plot(shap_values = shap_values, features = X_train)
 
 # MAGIC %md
 # MAGIC As expected, the **Hypertension** and **Age** of our patient have the strongest impact in our model.
-# MAGIC 
+# MAGIC
 # MAGIC Let's predict the probability of admission of a patient and understand which features drive this outcome:
 
 # COMMAND ----------
@@ -312,13 +312,13 @@ shap.summary_plot(shap_values = shap_values, features = X_train)
 # MAGIC %md
 # MAGIC ## License ⚖️
 # MAGIC Copyright / License info of the notebook. Copyright Databricks, Inc. [2022].  The source in this notebook is provided subject to the [Databricks License](https://databricks.com/db-license-source).  All included or referenced third party libraries are subject to the licenses set forth below.
-# MAGIC 
+# MAGIC
 # MAGIC |Library Name|Library License|Library License URL|Library Source URL| 
 # MAGIC | :-: | :-:| :-: | :-:|
 # MAGIC |Synthea|Apache License 2.0|https://github.com/synthetichealth/synthea/blob/master/LICENSE| https://github.com/synthetichealth/synthea|
 # MAGIC |The Book of OHDSI | Creative Commons Zero v1.0 Universal license.|https://ohdsi.github.io/TheBookOfOhdsi/index.html#license|https://ohdsi.github.io/TheBookOfOhdsi/|
-# MAGIC 
-# MAGIC 
-# MAGIC 
+# MAGIC
+# MAGIC
+# MAGIC
 # MAGIC ### Disclaimers
 # MAGIC *Databricks Inc. (“Databricks”) does not dispense medical, diagnosis, or treatment advice. This demo (“tool”) is for informational purposes only and may not be used as a substitute for professional medical advice, treatment, or diagnosis. This tool may not be used within Databricks to process Protected Health Information (“PHI”) as defined in the Health Insurance Portability and Accountability Act of 1996, unless you have executed with Databricks a contract that allows for processing PHI, an accompanying Business Associate Agreement (BAA), and are running this notebook within a HIPAA Account.  Please note that if you run this notebook within Azure Databricks, your contract with Microsoft applies.*

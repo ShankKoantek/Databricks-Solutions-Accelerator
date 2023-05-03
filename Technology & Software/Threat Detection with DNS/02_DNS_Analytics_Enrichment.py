@@ -7,7 +7,7 @@
 # MAGIC %md
 # MAGIC # 2. Loading the data
 # MAGIC We admit, that felt like a lot of work to prep URLHaus and dnstwist. But we are now ready for typosquatting detection and threat intel enrichment. 
-# MAGIC 
+# MAGIC
 # MAGIC Now, we can enrich the pDNS data with tldextract, GeoIP lookups, a DGA Classifier, URLHaus, threat intel lookups.
 # MAGIC We will do this using Spark SQL.
 

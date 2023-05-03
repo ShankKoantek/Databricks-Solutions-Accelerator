@@ -10,7 +10,7 @@
 # MAGIC <br/>
 # MAGIC <br/>
 # MAGIC <img src="https://github.com/QuentinAmbard/databricks-demo/raw/main/hls/resources/dbinterop/hls-dbiginte-lakehouse.png" width="1000px" />
-# MAGIC 
+# MAGIC
 # MAGIC In this solution accelerator, we demonstrate how we can leverage the lakehouse approach, for an in-depth analysis of patient outcomes,
 # MAGIC using EHR data.
 # MAGIC Consider a scenario that we have a collection of [FHIR](https://www.hl7.org/fhir/overview.html) bundles and want to explore the effect of different factors on Covid outcomes. However, FHIR standard is primarily designed for the exchange of information and not optimized for analytics. To solve this problem, we need to flatten 
@@ -33,7 +33,7 @@
 # MAGIC   * Use SHAP for explaining the effect of different features on the outcome under study
 # MAGIC   
 # MAGIC <img src="https://github.com/QuentinAmbard/databricks-demo/raw/main/hls/resources/dbinterop/hls-dbiginte-flow-0.png" width="1000px"/>
-# MAGIC 
+# MAGIC
 # MAGIC ### Data
 # MAGIC The data used in this demo is generated using [synthea](https://synthetichealth.github.io/synthea/). We used [covid infections module](https://github.com/synthetichealth/synthea/blob/master/src/main/resources/modules/covid19/infection.json), which incorporates patient risk factors such as diabetes, hypertension and SDOH in determining outcomes. The data is available at `s3://hls-eng-data-public/data/synthea/fhir/fhir/`. 
 
@@ -46,6 +46,6 @@
 # MAGIC | :-: | :-:| :-: | :-:|
 # MAGIC |Synthea|Apache License 2.0|https://github.com/synthetichealth/synthea/blob/master/LICENSE| https://github.com/synthetichealth/synthea|
 # MAGIC |The Book of OHDSI | Creative Commons Zero v1.0 Universal license.|https://ohdsi.github.io/TheBookOfOhdsi/index.html#license|https://ohdsi.github.io/TheBookOfOhdsi/|
-# MAGIC 
+# MAGIC
 # MAGIC ### Disclaimers
 # MAGIC *Databricks Inc. (“Databricks”) does not dispense medical, diagnosis, or treatment advice. This demo (“tool”) is for informational purposes only and may not be used as a substitute for professional medical advice, treatment, or diagnosis. This tool may not be used within Databricks to process Protected Health Information (“PHI”) as defined in the Health Insurance Portability and Accountability Act of 1996, unless you have executed with Databricks a contract that allows for processing PHI, an accompanying Business Associate Agreement (BAA), and are running this notebook within a HIPAA Account.  Please note that if you run this notebook within Azure Databricks, your contract with Microsoft applies.*

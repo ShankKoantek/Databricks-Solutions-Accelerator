@@ -3,7 +3,7 @@
 # MAGIC 🎉
 # MAGIC
 # MAGIC **Steps**
-# MAGIC 1. Simply attach this notebook to a cluster with DBR 11.0 and above, and hit Run-All for this notebook. A multi-step job and the clusters used in the job will be created for you and hyperlinks are printed on the last block of the notebook. 
+# MAGIC 1. Simply attach this notebook to a cluster and hit Run-All for this notebook. A multi-step job and the clusters used in the job will be created for you and hyperlinks are printed on the last block of the notebook. 
 # MAGIC
 # MAGIC 2. Run the accelerator notebooks: Feel free to explore the multi-step job page and **run the Workflow**, or **run the notebooks interactively** with the cluster to see how this solution accelerator executes. 
 # MAGIC
@@ -33,39 +33,59 @@ from solacc.companion import NotebookSolutionCompanion
 # COMMAND ----------
 
 job_json = {
-        "timeout_seconds": 7200,
+        "timeout_seconds": 28800,
         "max_concurrent_runs": 1,
         "tags": {
             "usage": "solacc_testing",
-            "group": "HLS"
+            "group": "MFG",
+            "accelerator": "cv-quality-inspection"
         },
         "tasks": [
             {
-                "job_cluster_key": "smolder_cluster",
-                "libraries": [
-                    {
-                        "jar": "s3://hls-eng-data-public/packages/smolder_212001.jar"
-                    }
-                ],
+                "job_cluster_key": "cv_qi_cluster",
                 "notebook_task": {
-                    "notebook_path": "01_HL7Streaming"
+                    "notebook_path": f"00_IngestionPCB"
                 },
-                "task_key": "smolder_01",
-                "description": ""
+                "task_key": "cv_qi_00"
+            },
+            {
+                "job_cluster_key": "cv_qi_cluster",
+                "notebook_task": {
+                    "notebook_path": f"01_ImageClassificationPytorch"
+                },
+                "task_key": "cv_qi_01",
+                "depends_on": [
+                    {
+                        "task_key": "cv_qi_00"
+                    }
+                ]
+            },
+            {
+                "job_cluster_key": "cv_qi_cluster",
+                "notebook_task": {
+                    "notebook_path": f"02_PredictionPCB"
+                },
+                "task_key": "cv_qi_02",
+                "depends_on": [
+                    {
+                        "task_key": "cv_qi_01"
+                    }
+                ]
             }
         ],
         "job_clusters": [
             {
-                "job_cluster_key": "smolder_cluster",
+                "job_cluster_key": "cv_qi_cluster",
                 "new_cluster": {
-                    "spark_version": "10.4.x-cpu-ml-scala2.12",
+                    "spark_version": "12.1.x-gpu-ml-scala2.12",
                 "spark_conf": {
-                    "spark.sql.streaming.stopTimeout": "60000"
+                    "spark.databricks.delta.formatCheck.enabled": "false"
                     },
                     "num_workers": 2,
-                    "node_type_id": {"AWS": "i3.xlarge", "MSA": "Standard_DS3_v2", "GCP": "n1-highmem-4"},
+                    "node_type_id": {"AWS": "g5.xlarge", "MSA": "Standard_NC12", "GCP": "a2-highgpu-1g"},
                     "custom_tags": {
-                        "usage": "solacc_testing"
+                        "usage": "solacc_testing",
+                        "accelerator": "cv-quality-inspection"
                     },
                 }
             }
@@ -77,3 +97,7 @@ job_json = {
 dbutils.widgets.dropdown("run_job", "False", ["True", "False"])
 run_job = dbutils.widgets.get("run_job") == "True"
 NotebookSolutionCompanion().deploy_compute(job_json, run_job=run_job)
+
+# COMMAND ----------
+
+

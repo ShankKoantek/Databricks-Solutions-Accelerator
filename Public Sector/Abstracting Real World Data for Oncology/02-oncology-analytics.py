@@ -6,9 +6,9 @@
 
 # MAGIC %md
 # MAGIC # Abstracting Real World Data from Oncology Notes: Data Analysis
-# MAGIC 
+# MAGIC
 # MAGIC In the previous notebook (`./00-entity-extraction`) we used SparkNLP's pipelines to extract highly specialized oncological entities from unstructured notes and stored the resulting tabular data in our delta lake.
-# MAGIC 
+# MAGIC
 # MAGIC In this notebook we analyze these data to answer questions such as:
 # MAGIC What are the most common cancer subtypes? What are the most common symptoms and how are these symptoms associated with each cancer subtype? which indications have the highest risk factor? etc. 
 
@@ -97,7 +97,7 @@ best_icd_mapped_pdf=best_icd_mapped_df.toPandas()
 
 # MAGIC %md
 # MAGIC ## 1.1. Get general information for staff management, reporting, & planning.
-# MAGIC 
+# MAGIC
 # MAGIC Let's take a look at the distribution of mapped codes
 
 # COMMAND ----------
@@ -238,7 +238,7 @@ display(
 
 # MAGIC %md
 # MAGIC ### Extract most frequent oncological diseases and symptoms based on documents
-# MAGIC 
+# MAGIC
 # MAGIC Here, we will count the number documents for each symptom-disease pair. To do this, first we filter high confidence entities and then create a pivot table. 
 
 # COMMAND ----------
@@ -333,7 +333,7 @@ plot_heatmap(norm_data_pdf,'normalized occurrence')
 
 # MAGIC %md
 # MAGIC ## Analyze drug usage patterns for inventory management and reporting
-# MAGIC 
+# MAGIC
 # MAGIC We are checking how many times any drug are encountered in the documents.
 
 # COMMAND ----------
@@ -360,7 +360,7 @@ display(
 
 # MAGIC %md
 # MAGIC ## Find the problems occurred after treatments 
-# MAGIC 
+# MAGIC
 # MAGIC We are filtering the dataframe to select rows with following conditions to see problems occurred after treatments.
 # MAGIC * `relation =='AFTER'`
 # MAGIC * `entity1=='TREATMENT'`
@@ -388,7 +388,7 @@ display(
 
 # MAGIC %md
 # MAGIC # 4. Analyze the Relations Between Body Parts and Procedures
-# MAGIC 
+# MAGIC
 # MAGIC In the extraction notebook, we created a relation extraction model to identify relationships between body parts and problem entities by using pretrained **RelationExtractionModel** `re_bodypart_problem`. Now let's load the data and take a look at the relationship between bodypart and procedures. By filtering the dataframe to select rows satisfying `entity1 != entity2` we can see the relations between different entities and see the procedures applied to internal organs
 
 # COMMAND ----------
@@ -407,7 +407,7 @@ display(
 
 # MAGIC %md
 # MAGIC # 5. Get Procedure codes from notes
-# MAGIC 
+# MAGIC
 # MAGIC We will created dataset for procedure codes, using `jsl_ner_wip_greedy_clinical` NER module and set NerConverter's WhiteList `['Procedure']` in order to get only drug entities. Let's take a look at this table:
 
 # COMMAND ----------
@@ -438,7 +438,7 @@ display(
 
 # MAGIC %md
 # MAGIC # 6. Get Assertion Status of Cancer Entities
-# MAGIC 
+# MAGIC
 # MAGIC Using the assertion status dataset we can find the number of family members of cancer patients with cancer or symptoms, and we can further check if the symptom is absent or present.
 
 # COMMAND ----------
@@ -499,7 +499,7 @@ display(
 # MAGIC %md
 # MAGIC ## License
 # MAGIC Copyright / License info of the notebook. Copyright [2021] the Notebook Authors.  The source in this notebook is provided subject to the [Apache 2.0 License](https://spdx.org/licenses/Apache-2.0.html).  All included or referenced third party libraries are subject to the licenses set forth below.
-# MAGIC 
+# MAGIC
 # MAGIC |Library Name|Library License|Library License URL|Library Source URL| 
 # MAGIC | :-: | :-:| :-: | :-:|
 # MAGIC |Pandas |BSD 3-Clause License| https://github.com/pandas-dev/pandas/blob/master/LICENSE | https://github.com/pandas-dev/pandas|
@@ -507,8 +507,8 @@ display(
 # MAGIC |Apache Spark |Apache License 2.0| https://github.com/apache/spark/blob/master/LICENSE | https://github.com/apache/spark/tree/master/python/pyspark|
 # MAGIC |Plotly |MIT License| https://github.com/plotly/plotly.py/blob/master/LICENSE.txt | https://github.com/plotly/plotly.py|
 # MAGIC |Scikit-Learn |BSD 3-Clause| https://github.com/scikit-learn/scikit-learn/blob/main/COPYING | https://github.com/scikit-learn/scikit-learn/|
-# MAGIC 
-# MAGIC 
+# MAGIC
+# MAGIC
 # MAGIC |Author|
 # MAGIC |-|
 # MAGIC |Databricks Inc.|

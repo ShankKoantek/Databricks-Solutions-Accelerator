@@ -7,7 +7,7 @@
 # MAGIC %md
 # MAGIC # 3. Ad-Hoc Analytics: Exploring the data
 # MAGIC FINALLY!!!! We have data. And we can start poking around. This is an optional section for you to familiarize yourself with the data. And pick up some spark SQL tricks. You can use these tactics to explore and expand on the analytics.
-# MAGIC 
+# MAGIC
 # MAGIC **Add your own queries!**
 
 # COMMAND ----------
