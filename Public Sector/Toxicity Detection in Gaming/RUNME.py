@@ -3,7 +3,7 @@
 # MAGIC 🎉
 # MAGIC
 # MAGIC **Steps**
-# MAGIC 1. Simply attach this notebook to a cluster with DBR 11.0 and above, and hit Run-All for this notebook. A multi-step job and the clusters used in the job will be created for you and hyperlinks are printed on the last block of the notebook. 
+# MAGIC 1. Simply attach this notebook to a cluster and hit Run-All for this notebook. A multi-step job and the clusters used in the job will be created for you and hyperlinks are printed on the last block of the notebook. 
 # MAGIC
 # MAGIC 2. Run the accelerator notebooks: Feel free to explore the multi-step job page and **run the Workflow**, or **run the notebooks interactively** with the cluster to see how this solution accelerator executes. 
 # MAGIC
@@ -60,62 +60,100 @@ from solacc.companion import NotebookSolutionCompanion
 # COMMAND ----------
 
 job_json = {
-        "timeout_seconds": 28800,
+        "timeout_seconds": 36000,
         "max_concurrent_runs": 1,
         "tags": {
             "usage": "solacc_testing",
-            "group": "RCG",
-            "accelerator": "wide-and-deep"
+            "group": "CME"
         },
         "tasks": [
             {
-                "job_cluster_key": "wide_deep_cluster",
-                "libraries": [],
+                "job_cluster_key": "gaming_cluster",
                 "notebook_task": {
-                    "notebook_path": f"01_data-preparation"
+                    "notebook_path": f"00_context"
                 },
-                "task_key": "wide_deep_01",
-                "description": ""
+                "task_key": "Gaming_00"
             },
             {
-                "job_cluster_key": "wide_deep_cluster",
+                "job_cluster_key": "gaming_cluster",
                 "notebook_task": {
-                    "notebook_path": f"02_feature-engineering"
+                    "notebook_path": f"01_intro"
                 },
-                "task_key": "wide_deep_02",
+                "task_key": "Gaming_01",
                 "depends_on": [
                     {
-                        "task_key": "wide_deep_01"
+                        "task_key": "Gaming_00"
                     }
                 ]
             },
             {
-                "job_cluster_key": "wide_deep_cluster",
+                "job_cluster_key": "gaming_cluster",
+                "libraries": [],
                 "notebook_task": {
-                    "notebook_path": f"03_model-development-deployment"
+                    "notebook_path": f"02_load_data"
                 },
-                "task_key": "wide_deep_03",
+                "task_key": "Gaming_02",
                 "depends_on": [
                     {
-                        "task_key": "wide_deep_02"
+                        "task_key": "Gaming_01"
+                    }
+                ]
+            },
+            {
+                "job_cluster_key": "gaming_cluster",
+                "notebook_task": {
+                    "notebook_path": f"03_simple_classification"
+                },
+                "libraries": [
+                    {
+                        "maven": {
+                            "coordinates": "com.johnsnowlabs.nlp:spark-nlp_2.12:4.0.0"
+                        }
+                    }
+                ],
+                "task_key": "Gaming_03",
+                "depends_on": [
+                    {
+                        "task_key": "Gaming_02"
+                    }
+                ]
+            },
+            {
+                "job_cluster_key": "gaming_cluster",
+                "notebook_task": {
+                    "notebook_path": f"04_inference_eda"
+                },
+                "libraries": [
+                    {
+                        "maven": {
+                            "coordinates": "com.johnsnowlabs.nlp:spark-nlp_2.12:4.0.0"
+                        }
+                    }
+                ],
+                "task_key": "Gaming_04",
+                "depends_on": [
+                    {
+                        "task_key": "Gaming_03"
                     }
                 ]
             }
         ],
         "job_clusters": [
             {
-                "job_cluster_key": "wide_deep_cluster",
+                "job_cluster_key": "gaming_cluster",
                 "new_cluster": {
                     "spark_version": "10.4.x-cpu-ml-scala2.12",
                 "spark_conf": {
                     "spark.databricks.delta.formatCheck.enabled": "false"
                     },
-                    "num_workers": 16,
-                    "node_type_id": {"AWS": "i3.xlarge", "MSA": "Standard_DS3_v2", "GCP": "n1-highmem-4"},
+                    "num_workers": 4,
+                    "node_type_id": {"AWS": "i3.xlarge", "MSA": "Standard_DS3_v2", "GCP": "n1-highmem-4"}, # different from standard API,
                     "custom_tags": {
-                        "usage": "solacc_testing",
-                        "group": "RCG",
-                        "accelerator": "wide-and-deep"
+                        "usage": "solacc_testing"
+                    },
+                    "spark_conf": {
+                        "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+                        "spark.kryoserializer.buffer.max": "2000M"
                     },
                 }
             }
@@ -127,6 +165,10 @@ job_json = {
 dbutils.widgets.dropdown("run_job", "False", ["True", "False"])
 run_job = dbutils.widgets.get("run_job") == "True"
 NotebookSolutionCompanion().deploy_compute(job_json, run_job=run_job)
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 

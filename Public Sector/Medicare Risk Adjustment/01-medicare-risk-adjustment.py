@@ -20,6 +20,66 @@
 
 # COMMAND ----------
 
+# shashank
+
+# !pip install sparknlp
+
+# !pip install spark-nlp-jsl==3.3.0
+
+# !pip install sparknlp_jsl
+# !pip install spark-nlp
+# !pip install sparknlp-jsl
+# !pip install spark-nlp-jsl
+# !pip install spark-nlp==4.4.1
+
+# You can update the pip as well
+# !/local_disk0/.ephemeral_nfs/envs/pythonEnv-1195e1e6-3b92-487a-8e77-0daf13a4013a/bin/python -m pip install --upgrade pip
+
+# COMMAND ----------
+
+# shashank
+
+# !pip install johnsnowlabs
+
+# import nlp
+# nlp.install()
+
+# !sudo wget https://setup.johnsnowlabs.com/nlp/install.sh -O - | sudo bash -s -- -a PATH_TO_LICENSE_JSON_FILE -i -r
+
+# COMMAND ----------
+
+# from johnsnowlabs import *
+
+# nlp.install(force_browser=True)
+
+# http://localhost:34143/login?code=ZFvQU1RrZluNbaWL4nmQyWs2cgWwmk
+
+# !python3 -m pip install --upgrade spark-nlp-jsl==3.0.2 --user --extra-index-url https://pypi.johnsnowlabs.com/3.0.2-XXXXXSECRETXXXXX
+
+# !pip install -q spark-nlp-jsl --extra-index-url https://pypi.johnsnowlabs.com/ZFvQU1RrZluNbaWL4nmQyWs2cgWwmk --upgrade
+
+# pip install -q spark-nlp-jsl==${version} --extra-index-url https://pypi.johnsnowlabs.com/${secret.code} --upgrade
+
+# !python3 -m pip install --upgrade spark-nlp-jsl==3.0.2 --user --extra-index-url https://pypi.johnsnowlabs.com/3.0.2-ZFvQU1RrZluNbaWL4nmQyWs2cgWwmk
+
+# COMMAND ----------
+
+# from google.colab import files
+
+# print('Please Upload your John Snow Labs License using the button below')
+# license_keys = files.upload()
+
+# !pip search spark-nlp-jsl
+
+# !pip install spark-nlp-jsl==3.3.0
+
+
+# COMMAND ----------
+
+# spark.conf.set("spark.jars.packages", "com.johnsnowlabs.nlp:spark-nlp_2.12:4.4.1")
+
+# COMMAND ----------
+
 import os
 import json
 import string
@@ -45,8 +105,6 @@ from pyspark.ml import Pipeline, PipelineModel
 
 print('sparknlp.version : ',sparknlp.version())
 print('sparknlp_jsl.version : ',sparknlp_jsl.version())
-
-spark
 
 # COMMAND ----------
 

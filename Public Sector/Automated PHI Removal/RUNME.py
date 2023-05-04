@@ -32,92 +32,97 @@ from solacc.companion import NotebookSolutionCompanion
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC Before setting up the rest of the accelerator, we need set up a few credentials in order to access Kaggle datasets. Grab an API key for your Kaggle account ([documentation](https://www.kaggle.com/docs/api#getting-started-installation-&-authentication) here). Here we demonstrate using the [Databricks Secret Scope](https://docs.databricks.com/security/secrets/secret-scopes.html) for credential management. 
-# MAGIC
-# MAGIC Copy the block of code below, replace the name the secret scope and fill in the credentials and execute the block. After executing the code, The accelerator notebook will be able to access the credentials it needs.
-# MAGIC
-# MAGIC
-# MAGIC ```
-# MAGIC client = NotebookSolutionCompanion().client
-# MAGIC try:
-# MAGIC   client.execute_post_json(f"{client.endpoint}/api/2.0/secrets/scopes/create", {"scope": "solution-accelerator-cicd"})
-# MAGIC except:
-# MAGIC   pass
-# MAGIC client.execute_post_json(f"{client.endpoint}/api/2.0/secrets/put", {
-# MAGIC   "scope": "solution-accelerator-cicd",
-# MAGIC   "key": "kaggle_username",
-# MAGIC   "string_value": "____"
-# MAGIC })
-# MAGIC
-# MAGIC client.execute_post_json(f"{client.endpoint}/api/2.0/secrets/put", {
-# MAGIC   "scope": "solution-accelerator-cicd",
-# MAGIC   "key": "kaggle_key",
-# MAGIC   "string_value": "____"
-# MAGIC })
-# MAGIC ```
+cluster_json = {
+    "num_workers": 8,
+    "cluster_name": "OCR_cluster",
+    "spark_version": "9.1.x-cpu-ml-scala2.12", # This needs to match JSL's current version in Partner Connect
+    "spark_conf": {
+        "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+        "spark.kryoserializer.buffer.max": "2000M",
+        "spark.databricks.delta.formatCheck.enabled": "false"
+    },
+    "node_type_id": {"AWS": "i3.xlarge", "MSA": "Standard_DS3_v2", "GCP": "n1-highmem-4"}, # different from standard API; this is multi-cloud friendly
+    "autotermination_minutes": 120
+}
+
+# COMMAND ----------
+
+nsc = NotebookSolutionCompanion()
+cluster_id = nsc.create_or_update_cluster_by_name(nsc.customize_cluster_json(cluster_json))
+
+# COMMAND ----------
+
+task_json = {'tasks': [{
+    'task_key': 'setup_cluster',
+    'depends_on': [],
+    'existing_cluster_id': cluster_id,
+    "notebook_task": {
+        "notebook_path": "/Shared/John Snow Labs/Install JohnSnowLabs NLP",
+        "source": "WORKSPACE"
+        },
+    'timeout_seconds': 86400}]
+            }
+nsc.submit_run(task_json)
 
 # COMMAND ----------
 
 job_json = {
-        "timeout_seconds": 28800,
+        "timeout_seconds": 7200,
         "max_concurrent_runs": 1,
         "tags": {
             "usage": "solacc_testing",
-            "group": "RCG",
-            "accelerator": "wide-and-deep"
+            "group": "HLS"
         },
         "tasks": [
             {
-                "job_cluster_key": "wide_deep_cluster",
-                "libraries": [],
+                "existing_cluster_id": cluster_id,
                 "notebook_task": {
-                    "notebook_path": f"01_data-preparation"
+                    "notebook_path": f"00-README"
                 },
-                "task_key": "wide_deep_01",
+                "task_key": "OCR_01",
                 "description": ""
             },
             {
-                "job_cluster_key": "wide_deep_cluster",
+                "existing_cluster_id": cluster_id,
+                "libraries": [],
                 "notebook_task": {
-                    "notebook_path": f"02_feature-engineering"
+                    "notebook_path": f"01-pdf-ocr"
                 },
-                "task_key": "wide_deep_02",
+                "task_key": "OCR_02",
+                "description": "",
                 "depends_on": [
                     {
-                        "task_key": "wide_deep_01"
+                        "task_key": "OCR_01"
                     }
                 ]
             },
             {
-                "job_cluster_key": "wide_deep_cluster",
+                "existing_cluster_id": cluster_id,
+                "libraries": [],
                 "notebook_task": {
-                    "notebook_path": f"03_model-development-deployment"
+                    "notebook_path": f"02-phi-deidentification"
                 },
-                "task_key": "wide_deep_03",
+                "task_key": "OCR_03",
+                "description": "",
                 "depends_on": [
                     {
-                        "task_key": "wide_deep_02"
+                        "task_key": "OCR_02"
                     }
                 ]
-            }
-        ],
-        "job_clusters": [
+            },
             {
-                "job_cluster_key": "wide_deep_cluster",
-                "new_cluster": {
-                    "spark_version": "10.4.x-cpu-ml-scala2.12",
-                "spark_conf": {
-                    "spark.databricks.delta.formatCheck.enabled": "false"
-                    },
-                    "num_workers": 16,
-                    "node_type_id": {"AWS": "i3.xlarge", "MSA": "Standard_DS3_v2", "GCP": "n1-highmem-4"},
-                    "custom_tags": {
-                        "usage": "solacc_testing",
-                        "group": "RCG",
-                        "accelerator": "wide-and-deep"
-                    },
-                }
+                "existing_cluster_id": cluster_id,
+                "libraries": [],
+                "notebook_task": {
+                    "notebook_path": f"03-config"
+                },
+                "task_key": "OCR_04",
+                "description": "",
+                "depends_on": [
+                    {
+                        "task_key": "OCR_03"
+                    }
+                ]
             }
         ]
     }
@@ -126,7 +131,14 @@ job_json = {
 
 dbutils.widgets.dropdown("run_job", "False", ["True", "False"])
 run_job = dbutils.widgets.get("run_job") == "True"
-NotebookSolutionCompanion().deploy_compute(job_json, run_job=run_job)
+
+# COMMAND ----------
+
+nsc.deploy_compute(job_json, run_job=run_job, wait=3600)
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 

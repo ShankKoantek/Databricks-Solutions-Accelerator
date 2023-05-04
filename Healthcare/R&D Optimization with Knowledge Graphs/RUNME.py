@@ -3,7 +3,7 @@
 # MAGIC 🎉
 # MAGIC
 # MAGIC **Steps**
-# MAGIC 1. Simply attach this notebook to a cluster with DBR 11.0 and above, and hit Run-All for this notebook. A multi-step job and the clusters used in the job will be created for you and hyperlinks are printed on the last block of the notebook. 
+# MAGIC 1. Simply attach this notebook to a cluster and hit Run-All for this notebook. A multi-step job and the clusters used in the job will be created for you and hyperlinks are printed on the last block of the notebook. 
 # MAGIC
 # MAGIC 2. Run the accelerator notebooks: Feel free to explore the multi-step job page and **run the Workflow**, or **run the notebooks interactively** with the cluster to see how this solution accelerator executes. 
 # MAGIC
@@ -32,90 +32,110 @@ from solacc.companion import NotebookSolutionCompanion
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC Before setting up the rest of the accelerator, we need set up a few credentials in order to access Kaggle datasets. Grab an API key for your Kaggle account ([documentation](https://www.kaggle.com/docs/api#getting-started-installation-&-authentication) here). Here we demonstrate using the [Databricks Secret Scope](https://docs.databricks.com/security/secrets/secret-scopes.html) for credential management. 
-# MAGIC
-# MAGIC Copy the block of code below, replace the name the secret scope and fill in the credentials and execute the block. After executing the code, The accelerator notebook will be able to access the credentials it needs.
-# MAGIC
-# MAGIC
-# MAGIC ```
-# MAGIC client = NotebookSolutionCompanion().client
-# MAGIC try:
-# MAGIC   client.execute_post_json(f"{client.endpoint}/api/2.0/secrets/scopes/create", {"scope": "solution-accelerator-cicd"})
-# MAGIC except:
-# MAGIC   pass
-# MAGIC client.execute_post_json(f"{client.endpoint}/api/2.0/secrets/put", {
-# MAGIC   "scope": "solution-accelerator-cicd",
-# MAGIC   "key": "kaggle_username",
-# MAGIC   "string_value": "____"
-# MAGIC })
-# MAGIC
-# MAGIC client.execute_post_json(f"{client.endpoint}/api/2.0/secrets/put", {
-# MAGIC   "scope": "solution-accelerator-cicd",
-# MAGIC   "key": "kaggle_key",
-# MAGIC   "string_value": "____"
-# MAGIC })
-# MAGIC ```
-
-# COMMAND ----------
-
 job_json = {
         "timeout_seconds": 28800,
         "max_concurrent_runs": 1,
         "tags": {
             "usage": "solacc_testing",
-            "group": "RCG",
-            "accelerator": "wide-and-deep"
+            "group": "HLS"
         },
         "tasks": [
             {
-                "job_cluster_key": "wide_deep_cluster",
-                "libraries": [],
+                "job_cluster_key": "wscb_cluster",
                 "notebook_task": {
-                    "notebook_path": f"01_data-preparation"
+                    "notebook_path": f"00_README"
                 },
-                "task_key": "wide_deep_01",
-                "description": ""
+                "task_key": "wscb_01"
             },
             {
-                "job_cluster_key": "wide_deep_cluster",
+                "job_cluster_key": "wscb_cluster",
                 "notebook_task": {
-                    "notebook_path": f"02_feature-engineering"
+                    "notebook_path": f"01_config"
                 },
-                "task_key": "wide_deep_02",
+                "libraries": [
+                    {
+                        "maven": {
+                            "coordinates": "wisecubeai:graphster:0.1.1"
+                        }
+                    }
+                ],
+                "task_key": "wscb_02",
                 "depends_on": [
                     {
-                        "task_key": "wide_deep_01"
+                        "task_key": "wscb_01"
                     }
                 ]
             },
             {
-                "job_cluster_key": "wide_deep_cluster",
+                "job_cluster_key": "wscb_cluster",
                 "notebook_task": {
-                    "notebook_path": f"03_model-development-deployment"
+                    "notebook_path": f"02_download_staging"
                 },
-                "task_key": "wide_deep_03",
+                "libraries": [
+                    {
+                        "maven": {
+                            "coordinates": "wisecubeai:graphster:0.1.1"
+                        }
+                    }
+                ],
+                "task_key": "wscb_03",
                 "depends_on": [
                     {
-                        "task_key": "wide_deep_02"
+                        "task_key": "wscb_02"
+                    }
+                ]
+            },
+            {
+                "job_cluster_key": "wscb_cluster",
+                "notebook_task": {
+                    "notebook_path": f"03_enrichment_fusion"
+                },
+                "libraries": [
+                    {
+                        "maven": {
+                            "coordinates": "wisecubeai:graphster:0.1.1"
+                        }
+                    }
+                ],
+                "task_key": "wscb_04",
+                "depends_on": [
+                    {
+                        "task_key": "wscb_03"
+                    }
+                ]
+            },
+            {
+                "job_cluster_key": "wscb_cluster",
+                "notebook_task": {
+                    "notebook_path": f"04_querying_derived_graph"
+                },
+                "libraries": [
+                    {
+                        "maven": {
+                            "coordinates": "wisecubeai:graphster:0.1.1"
+                        }
+                    }
+                ],
+                "task_key": "wscb_05",
+                "depends_on": [
+                    {
+                        "task_key": "wscb_04"
                     }
                 ]
             }
         ],
         "job_clusters": [
             {
-                "job_cluster_key": "wide_deep_cluster",
+                "job_cluster_key": "wscb_cluster",
                 "new_cluster": {
-                    "spark_version": "10.4.x-cpu-ml-scala2.12",
+                    "spark_version": "11.3.x-cpu-ml-scala2.12",
                 "spark_conf": {
                     "spark.databricks.delta.formatCheck.enabled": "false"
                     },
-                    "num_workers": 16,
+                    "num_workers": 2,
                     "node_type_id": {"AWS": "i3.xlarge", "MSA": "Standard_DS3_v2", "GCP": "n1-highmem-4"},
                     "custom_tags": {
-                        "usage": "solacc_testing",
-                        "group": "RCG",
-                        "accelerator": "wide-and-deep"
+                        "usage": "solacc_testing"
                     },
                 }
             }
@@ -127,7 +147,3 @@ job_json = {
 dbutils.widgets.dropdown("run_job", "False", ["True", "False"])
 run_job = dbutils.widgets.get("run_job") == "True"
 NotebookSolutionCompanion().deploy_compute(job_json, run_job=run_job)
-
-# COMMAND ----------
-
-

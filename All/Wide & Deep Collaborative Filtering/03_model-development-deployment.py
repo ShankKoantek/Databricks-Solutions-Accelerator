@@ -746,7 +746,7 @@ with mlflow.start_run(run_name=model_name) as run:
   
   # persist the original tensorflow model
   mlflow.tensorflow.log_model(
-    tf_saved_model_dir=saved_model_path, 
+    tf_saved_model_dir=saved_model_path,
     tf_meta_graph_tags=tf_meta_graph_tags, 
     tf_signature_def_key=tf_signature_def_key,
     artifact_path='model',
@@ -803,7 +803,7 @@ client.transition_model_version_stage(
   name=model_name,
   version=model_version,
   stage='Production'
-  )     
+)     
 
 # COMMAND ----------
 

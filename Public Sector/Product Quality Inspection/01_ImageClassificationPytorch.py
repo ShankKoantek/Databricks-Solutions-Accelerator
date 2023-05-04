@@ -251,8 +251,12 @@ with converter_train.make_torch_dataloader(
 
 # COMMAND ----------
 
+# shashank
 BATCH_SIZE = 32  # process 32 images at a time
-NUM_EPOCHS = 15  # iterate over all images 5 times
+NUM_EPOCHS = 1  # iterate over all images 5 times
+
+# BATCH_SIZE = 32  # process 32 images at a time
+# NUM_EPOCHS = 15  # iterate over all images 5 times
 
 # COMMAND ----------
 

@@ -295,6 +295,15 @@ demand_df.write \
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC show DATABASES;
+
+# COMMAND ----------
+
+dbName
+
+# COMMAND ----------
+
 spark.sql(f"DROP TABLE IF EXISTS {dbName}.part_level_demand")
 spark.sql(f"CREATE TABLE {dbName}.part_level_demand USING DELTA LOCATION '{demand_df_delta_path}'")
 

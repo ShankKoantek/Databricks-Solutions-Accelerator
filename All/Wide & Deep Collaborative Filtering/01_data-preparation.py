@@ -38,6 +38,11 @@
 
 # COMMAND ----------
 
+# MAGIC %sh
+# MAGIC kaggle competitions download -c instacart-market-basket-analysis
+
+# COMMAND ----------
+
 # MAGIC %run ./config/data-extract
 
 # COMMAND ----------

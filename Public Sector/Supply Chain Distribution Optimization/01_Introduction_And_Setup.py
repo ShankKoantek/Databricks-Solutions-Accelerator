@@ -33,4 +33,12 @@
 
 # COMMAND ----------
 
-# MAGIC %run ./_resources/00-setup $reset_all_data=true
+# %run ./_resources/00-setup $reset_all_data=true
+
+# COMMAND ----------
+
+# shashank
+# The above command is getting timeout with in 10 minutes 
+# which is the default timeout for running the notebook using the run command
+
+dbutils.notebook.run("./_resources/00-setup", timeout_seconds=1800,arguments={"reset_all_data":True})
