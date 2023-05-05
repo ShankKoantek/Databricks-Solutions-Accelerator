@@ -106,7 +106,7 @@
 
 import pandas as pd
 
-storage_account = "pawaritstorageaccount" # for original training set
+storage_account = " " # for original training set
 
 vibration_reports_path = f"https://{storage_account}.blob.core.windows.net/public/digital-twin-gtm/data/model_development/vibration_reports.csv"
 vibration_reports = spark.createDataFrame(pd.read_csv(vibration_reports_path))
@@ -227,18 +227,32 @@ client.transition_model_version_stage(
 # COMMAND ----------
 
 # DBTITLE 1,Retrieve credentials to read from your landing zone 
-import os 
+import os
 
-azSubscriptionId = dbutils.secrets.get("solution-accelerator-cicd", "azSubscriptionId") # please change to your own credentials
-azTenantId = dbutils.secrets.get("solution-accelerator-cicd", "azTenantId") # please change to your own credentials
-spId = dbutils.secrets.get("solution-accelerator-cicd", "spId") # please change to your own credentials
-spSecret = dbutils.secrets.get("solution-accelerator-cicd", "spSecret") # please change to your own credentials
+# Tenant ID : a46fcac5-4b83-45dc-a1ec-08be54b57bc6
+# Client Secret : Q0f8Q~3spv~WIIFb41pcb9W9_qU1VXRrB~RgZcEU
+# Secret ID : d2c1bdc3-30a1-4a35-83b8-69881e3c6f34
+# Client ID (Service Principal ID) : 0dd9a5cf-aaf0-40f7-a653-6a3b77e26fa9
+# Subscription id : ba3707a6-d45b-4bdd-a975-41fdd1ebb123
+# Storage Account Name : digitaltwinsstorage
+# Container Name : digitaltwinscontainer
+
+# azSubscriptionId = dbutils.secrets.get("solution-accelerator-cicd", "azSubscriptionId") # please change to your own credentials
+# azTenantId = dbutils.secrets.get("solution-accelerator-cicd", "azTenantId") # please change to your own credentials
+# spId = dbutils.secrets.get("solution-accelerator-cicd", "spId") # please change to your own credentials
+# spSecret = dbutils.secrets.get("solution-accelerator-cicd", "spSecret") # please change to your own credentials
+
+
+azSubscriptionId = "ba3707a6-d45b-4bdd-a975-41fdd1ebb123"
+azTenantId = "a46fcac5-4b83-45dc-a1ec-08be54b57bc6"
+spId = "0dd9a5cf-aaf0-40f7-a653-6a3b77e26fa9"
+spSecret = "d2c1bdc3-30a1-4a35-83b8-69881e3c6f34"
 
 os.environ["AZURE_TENANT_ID"] = azTenantId
 os.environ["AZURE_CLIENT_ID"] = spId
 os.environ["AZURE_CLIENT_SECRET"] = spSecret
 
-storage_account = "pawaritstorageaccount" # TODO: please change to your own storage account
+storage_account = "digitaltwinsstorage" # TODO: please change to your own storage account
 
 spark.conf.set("spark.sql.shuffle.partitions", 1) # just for this demo
 spark.conf.set(f"fs.azure.account.auth.type.{storage_account}.dfs.core.windows.net", "OAuth")
@@ -279,8 +293,8 @@ file_name_expr = F.reverse(F.split(F.input_file_name(), "/")).getItem(0)
 
 # COMMAND ----------
 
-landing_zone_storage_account = "pawaritstorageaccount" # please change to your own storage account
-landing_zone_storage_container = "demo" # please change to your own storage container
+landing_zone_storage_account = "digitaltwinsstorage" # please change to your own storage account
+landing_zone_storage_container = "digitaltwinscontainerstorageaccount" # please change to your own storage container
 landing_zone_path = f"abfss://{landing_zone_storage_container}@{landing_zone_storage_account}.dfs.core.windows.net/digital-twin/data/landing_zone"
 
 input_df = (

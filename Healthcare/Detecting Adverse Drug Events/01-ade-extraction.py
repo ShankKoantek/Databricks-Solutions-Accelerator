@@ -44,6 +44,10 @@ spark
 
 # COMMAND ----------
 
+
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC For simplicity and ease of use, we run a notebook in the collection which contains definitions and classes for setting and creating paths as well as downloading relevant datasets for this exercise. 
 

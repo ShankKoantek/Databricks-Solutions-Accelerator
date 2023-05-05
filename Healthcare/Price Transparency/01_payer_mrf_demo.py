@@ -78,16 +78,25 @@ df.writeStream
  .outputMode("append") 
  .format("delta")
  .trigger(processingTime="10 seconds")
- .option("truncate", "false") 
+ .option("truncate", "false")
  .option("checkpointLocation", source_data + "_checkpoint") 
  .table("hls_dev_payer_transparency.payer_transparency_ingest") 
 )
 
 # COMMAND ----------
 
+while 1:
+  try:  
+    print(query.lastProgress.get('batchId'))
+  except:
+    pass
+
+# COMMAND ----------
+
 # Waiting for the stream to complete 
 import time
 lastBatch = -2 #Spark batches start at -1
+
 print("sleep for 30 seconds, then check query")
 time.sleep(30)
 while lastBatch != query.lastProgress.get('batchId'):
@@ -95,7 +104,7 @@ while lastBatch != query.lastProgress.get('batchId'):
   print("Query still running - wait another 30 seconds")
   time.sleep(30) #sleep for another interval
 
-query.stop()    
+query.stop()
 print("Query finished")
 
 # COMMAND ----------

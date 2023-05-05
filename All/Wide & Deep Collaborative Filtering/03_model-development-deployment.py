@@ -159,6 +159,10 @@ test = get_percentage_of_data(test,0.001)
 
 # COMMAND ----------
 
+
+
+# COMMAND ----------
+
 # DBTITLE 1,Cache Data for Faster Access
 # configure temp cache for petastorm files
 spark.conf.set(SparkDatasetConverter.PARENT_CACHE_DIR_URL_CONF, 'file:///dbfs/tmp/instacart_wide_deep/pstorm_cache') # the file:// prefix is required by petastorm
@@ -215,8 +219,13 @@ def get_data_specs(epochs=1, batch_size=128):
 # COMMAND ----------
 
 # DBTITLE 1,Verify Spec
+# def get_data_specs(epochs=1, batch_size=128):
+specs = get_data_specs(1,1)
+
+# orignal
+
 # retrieve specs
-specs = get_data_specs()
+# specs = get_data_specs()
 
 # retrieve first batch from first (training) spec
 next(
@@ -452,6 +461,8 @@ hparams = {
 
 # shashank
     'batch_size':1
+
+#  orignal
 #   'batch_size':32
   }
 
@@ -523,12 +534,6 @@ results[0]
 # COMMAND ----------
 
 # MAGIC %md Using our test data, which the model did not see during hyperparameter tuning, we can better assess model performance.  Our test data, also stored in Petastorm, requires access to a function to re-organize it for evaluation.  In addition, we need to explicitly define the number of data steps over which the data should be evaluated (or the evaluation step will run indefinitely): 
-
-# COMMAND ----------
-
-# steps = int(test_pstorm.dataset_size/batch_size)
-# test_pstorm.dataset_size
-batch_size
 
 # COMMAND ----------
 
@@ -704,16 +709,6 @@ help(mlflow.tensorflow.log_model)
 
 # COMMAND ----------
 
-
-
-# COMMAND ----------
-
-mlflow.tensorflow.log_model(
-    saved_model_dir=saved_model_path, 
-    signature_def_key=tf_signature_def_key,
-    artifact_path='model',
-    conda_env=conda_env
-)
 
 
 # COMMAND ----------
