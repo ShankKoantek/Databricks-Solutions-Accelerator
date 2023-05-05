@@ -106,7 +106,7 @@
 
 import pandas as pd
 
-storage_account = " " # for original training set
+storage_account = "pawaritstorageaccount" # for original training set
 
 vibration_reports_path = f"https://{storage_account}.blob.core.windows.net/public/digital-twin-gtm/data/model_development/vibration_reports.csv"
 vibration_reports = spark.createDataFrame(pd.read_csv(vibration_reports_path))
@@ -294,7 +294,7 @@ file_name_expr = F.reverse(F.split(F.input_file_name(), "/")).getItem(0)
 # COMMAND ----------
 
 landing_zone_storage_account = "digitaltwinsstorage" # please change to your own storage account
-landing_zone_storage_container = "digitaltwinscontainerstorageaccount" # please change to your own storage container
+landing_zone_storage_container = "digitaltwinscontainer" # please change to your own storage container
 landing_zone_path = f"abfss://{landing_zone_storage_container}@{landing_zone_storage_account}.dfs.core.windows.net/digital-twin/data/landing_zone"
 
 input_df = (

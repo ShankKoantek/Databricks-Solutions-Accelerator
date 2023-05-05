@@ -80,6 +80,10 @@
 
 # COMMAND ----------
 
+# sparknlp_jsl.start()
+
+# COMMAND ----------
+
 import os
 import json
 import string
