@@ -18,17 +18,17 @@ import pandas as pd
 # COMMAND ----------
 
 # MAGIC %md ## Step 1: Access Data
-# MAGIC 
+# MAGIC
 # MAGIC Across this and the subsequent notebooks comprising this demonstration, we will identify potential out-of-stock and on-shelf availability issues requiring further scrutiny through the analysis of store inventory records:
-# MAGIC 
+# MAGIC
 # MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/osa_tredence_alerts.jpg' width=75%>
-# MAGIC 
+# MAGIC
 # MAGIC Out-of-stock (OOS) scenarios occur when a retailer does not have enough inventory to meet consumer demand.  When an insufficient number of product units are made available to customers, not only are immediate sales lost but consumer confidence in the retailer is eroded. Out-of-stocks occur for a variety of reasons. Poor forecasting, limited supply, and operational challenges are all common causes. With each, swift action is required to identify and address the source of the problem less they continue to impact sales.  The challenge with out of stocks is that by the time it is identified, the lead time for requesting replacement units and making them available on the shelf for the consumer may require the retailer to live with the issue for quite some time. It is therefore important that any analysis of stocking levels consider the time to replenishment associated with a given item and location.
-# MAGIC 
+# MAGIC
 # MAGIC A bit different from OOS issues are on-shelf availability (OSA) problems where inventory may be in the store but it's not placed in a manner that makes it easily accessible to customers. Product may be in inventory but the principal display may give the impression the item is out of stock or in low quantity.  Items may be on the shelf but not pulled forward in a manner that makes them easily viewable by customers.  Product may be technically in inventory but in a backroom that's not accessible to customers. Regardless of the reason, OSA issues tend to lead to lost revenue for retailers.
-# MAGIC 
+# MAGIC
 # MAGIC To illustrate how analysis of OOS and OSA issues may be performed, Tredence has made available a simulated set of inventory and vendor data available for download [here](https://github.com/tredenceofficial/OSA-Data). To make these data available for use with this and the related notebooks, download the CSV files and then load them to your cloud storage environment.  You may [mount](https://docs.databricks.com/data/databricks-file-system.html#mount-object-storage-to-dbfs) that storage to your Databricks environment as */mnt/osa*.  
-# MAGIC 
+# MAGIC
 # MAGIC We have automated this downloading step for you and used a */tmp/osa* storage path instead through out this accelerator.
 
 # COMMAND ----------
@@ -46,10 +46,10 @@ import pandas as pd
 
 # DBTITLE 1,Initialize OSA Database
 # MAGIC %sql
-# MAGIC 
+# MAGIC
 # MAGIC -- drop any old copies of this database
 # MAGIC DROP DATABASE IF EXISTS osa CASCADE;
-# MAGIC 
+# MAGIC
 # MAGIC -- create database to house data assets
 # MAGIC CREATE DATABASE IF NOT EXISTS osa LOCATION '/tmp/osa/';
 
@@ -138,11 +138,11 @@ display(spark.table('osa.vendor'))
 # COMMAND ----------
 
 # MAGIC %md ## Step 2: Address Missing Records
-# MAGIC 
+# MAGIC
 # MAGIC The inventory data contains records for products in specific stores when an inventory-related transaction occurs. Since not every product *moves* on every date, there will be days for which there is no data for certain store and product SKU combinations. 
-# MAGIC 
+# MAGIC
 # MAGIC Time series analysis techniques used in our framework require a complete set of records for products within a given location. To address the *missing* entries, we will generate a list of all dates for which we expect records. A cross-join with store-SKU combinations will provide the base set of records for which we expect data.  
-# MAGIC 
+# MAGIC
 # MAGIC In the real world, not all products are intended to be sold at each location at all times.  In an analysis of non-simulated data, we may require additional information to determine the complete set of dates for a given store-SKU combination for which we should have data:
 
 # COMMAND ----------
@@ -210,7 +210,7 @@ display(inventory_with_gaps)
 # COMMAND ----------
 
 # MAGIC %md 
-# MAGIC 
+# MAGIC
 # MAGIC We now have one record for each date-store-SKU combination in our dataset.  However, on those dates for which there were no inventory changes, we are currently missing information about the inventory status of those stores and SKUs.  To address this, we will employ a combination of forward filling, *i.e.* applying the last valid record to subsequent records until a new value is encountered, and defaults.  For the forward fill, we will make use of the [last()](https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.sql.functions.last.html) function, providing a value of *True* for the *ignorenulls* argument which will force it to retrieve the last non-null value in a sequence:
 
 # COMMAND ----------
@@ -251,7 +251,7 @@ display(inventory_cleansed)
 # COMMAND ----------
 
 # MAGIC %md ## Step 3: Identify Key Inventory Events
-# MAGIC 
+# MAGIC
 # MAGIC With our complete inventory dataset in-hand, we can now identify key inventory-related events within the data.  These include the occurrence of promotions intended to drive product sales and replenishment events during which new units are added to inventory:
 
 # COMMAND ----------
@@ -286,5 +286,5 @@ display(inventory_final)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC &copy; 2021 Databricks, Inc. All rights reserved. The source in this notebook is provided subject to the [Databricks License](https://databricks.com/db-license-source).  All included or referenced third party libraries are subject to the licenses set forth below.

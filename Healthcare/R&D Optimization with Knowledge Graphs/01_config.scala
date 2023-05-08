@@ -9,10 +9,6 @@
 
 // COMMAND ----------
 
-
-
-// COMMAND ----------
-
 // DBTITLE 1,Import libraires
 import com.graphster.orpheus.config.Configuration
 import com.graphster.orpheus.config.graph._

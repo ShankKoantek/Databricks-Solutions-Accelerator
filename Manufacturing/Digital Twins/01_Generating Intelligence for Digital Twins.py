@@ -226,40 +226,124 @@ client.transition_model_version_stage(
 
 # COMMAND ----------
 
-# DBTITLE 1,Retrieve credentials to read from your landing zone 
+# -----
+
+# COMMAND ----------
+
+# Application (client) ID
+application_id = "435173d9-1940-4c8f-a227-212a34885bf6"
+
+# Application (client) secret 
+service_credential = "XC68Q~62DvAseFIRyvou1pa0Q.lh7wrm3Odi9b8S"
+
+# Directory (tenant) ID 
+directory_id = "c294a3ea-9ee4-4c26-b2dc-acf8020a6182"
+
+# Name of Storage Account
+storage_account_name = "shankmainworksa"
+
+# Container Name
+container_name = "main-data"
+
+# service_credential = dbutils.secrets.get(scope="<scope>",key="<service-credential-key>")
+
+spark.conf.set(f"fs.azure.account.auth.type.{storage_account_name}.dfs.core.windows.net", "OAuth")
+spark.conf.set(f"fs.azure.account.oauth.provider.type.{storage_account_name}.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider")
+spark.conf.set(f"fs.azure.account.oauth2.client.id.{storage_account_name}.dfs.core.windows.net", application_id)
+spark.conf.set(f"fs.azure.account.oauth2.client.secret.{storage_account_name}.dfs.core.windows.net", service_credential)
+spark.conf.set(f"fs.azure.account.oauth2.client.endpoint.{storage_account_name}.dfs.core.windows.net", f"https://login.microsoftonline.com/{directory_id}/oauth2/token")
+
+# COMMAND ----------
+
+file_path = "emp_data.csv"
+
+df = spark.read.csv(
+    f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/{file_path}",
+    header=True,
+    inferSchema=True
+)
+
+display(df)
+
+# COMMAND ----------
+
 import os
+os.environ["AZURE_TENANT_ID"] = directory_id
+os.environ["AZURE_CLIENT_ID"] = application_id
+os.environ["AZURE_CLIENT_SECRET"] = service_credential
 
-# Tenant ID : a46fcac5-4b83-45dc-a1ec-08be54b57bc6
-# Client Secret : Q0f8Q~3spv~WIIFb41pcb9W9_qU1VXRrB~RgZcEU
-# Secret ID : d2c1bdc3-30a1-4a35-83b8-69881e3c6f34
-# Client ID (Service Principal ID) : 0dd9a5cf-aaf0-40f7-a653-6a3b77e26fa9
-# Subscription id : ba3707a6-d45b-4bdd-a975-41fdd1ebb123
-# Storage Account Name : digitaltwinsstorage
-# Container Name : digitaltwinscontainer
-
-# azSubscriptionId = dbutils.secrets.get("solution-accelerator-cicd", "azSubscriptionId") # please change to your own credentials
-# azTenantId = dbutils.secrets.get("solution-accelerator-cicd", "azTenantId") # please change to your own credentials
-# spId = dbutils.secrets.get("solution-accelerator-cicd", "spId") # please change to your own credentials
-# spSecret = dbutils.secrets.get("solution-accelerator-cicd", "spSecret") # please change to your own credentials
+# COMMAND ----------
 
 
-azSubscriptionId = "ba3707a6-d45b-4bdd-a975-41fdd1ebb123"
-azTenantId = "a46fcac5-4b83-45dc-a1ec-08be54b57bc6"
-spId = "0dd9a5cf-aaf0-40f7-a653-6a3b77e26fa9"
-spSecret = "d2c1bdc3-30a1-4a35-83b8-69881e3c6f34"
 
-os.environ["AZURE_TENANT_ID"] = azTenantId
-os.environ["AZURE_CLIENT_ID"] = spId
-os.environ["AZURE_CLIENT_SECRET"] = spSecret
+# COMMAND ----------
 
-storage_account = "digitaltwinsstorage" # TODO: please change to your own storage account
+# Name of Storage Account
+storage_account_name = "shankmainworksa"
 
-spark.conf.set("spark.sql.shuffle.partitions", 1) # just for this demo
-spark.conf.set(f"fs.azure.account.auth.type.{storage_account}.dfs.core.windows.net", "OAuth")
-spark.conf.set(f"fs.azure.account.oauth.provider.type.{storage_account}.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider")
-spark.conf.set(f"fs.azure.account.oauth2.client.id.{storage_account}.dfs.core.windows.net", spId)
-spark.conf.set(f"fs.azure.account.oauth2.client.secret.{storage_account}.dfs.core.windows.net", spSecret)
-spark.conf.set(f"fs.azure.account.oauth2.client.endpoint.{storage_account}.dfs.core.windows.net", f"https://login.microsoftonline.com/{azTenantId}/oauth2/token")
+# Container Name
+container_name = "main-data"
+
+# Storage Account Key
+storage_account_key = "LzZCDoj3unEOs6xotlccx1p1YBZ5jmOemk7isCs2gYyWTIdxuDtSQ3wuiEJMlOI1QYMxYqSvXGI0+AStkdBk8w=="
+
+spark.conf.set(
+    f"fs.azure.account.key.{storage_account_name}.dfs.core.windows.net",
+    storage_account_key
+)
+
+# COMMAND ----------
+
+file_path = "emp_data.csv"
+
+df = spark.read.csv(
+    f"abfss://{container_name}@{storage_account_name}.dfs.core.windows.net/{file_path}",
+    header=True,
+    inferSchema=True
+)
+
+display(df)
+
+# COMMAND ----------
+
+# -----
+
+# COMMAND ----------
+
+# DBTITLE 1,Retrieve credentials to read from your landing zone 
+# import os
+
+# # Tenant ID : a46fcac5-4b83-45dc-a1ec-08be54b57bc6
+# # Client Secret : Q0f8Q~3spv~WIIFb41pcb9W9_qU1VXRrB~RgZcEU
+# # Secret ID : d2c1bdc3-30a1-4a35-83b8-69881e3c6f34
+# # Client ID (Service Principal ID) : 0dd9a5cf-aaf0-40f7-a653-6a3b77e26fa9
+# # Subscription id : ba3707a6-d45b-4bdd-a975-41fdd1ebb123
+# # Storage Account Name : digitaltwinsstorage
+# # Container Name : digitaltwinscontainer
+
+# # azSubscriptionId = dbutils.secrets.get("solution-accelerator-cicd", "azSubscriptionId") # please change to your own credentials
+# # azTenantId = dbutils.secrets.get("solution-accelerator-cicd", "azTenantId") # please change to your own credentials
+# # spId = dbutils.secrets.get("solution-accelerator-cicd", "spId") # please change to your own credentials
+# # spSecret = dbutils.secrets.get("solution-accelerator-cicd", "spSecret") # please change to your own credentials
+
+
+# azSubscriptionId = "ba3707a6-d45b-4bdd-a975-41fdd1ebb123"
+# azTenantId = "a46fcac5-4b83-45dc-a1ec-08be54b57bc6"
+# spId = "0dd9a5cf-aaf0-40f7-a653-6a3b77e26fa9"
+# spSecret = "d2c1bdc3-30a1-4a35-83b8-69881e3c6f34"
+
+# os.environ["AZURE_TENANT_ID"] = azTenantId
+# os.environ["AZURE_CLIENT_ID"] = spId
+# os.environ["AZURE_CLIENT_SECRET"] = spSecret
+
+# storage_account = "digitaltwinsstorage" # TODO: please change to your own storage account
+
+# spark.conf.set("spark.sql.shuffle.partitions", 1) # just for this demo
+# spark.conf.set(f"fs.azure.account.auth.type.{storage_account}.dfs.core.windows.net", "OAuth")
+# spark.conf.set(f"fs.azure.account.oauth.provider.type.{storage_account}.dfs.core.windows.net", "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider")
+# spark.conf.set(f"fs.azure.account.oauth2.client.id.{storage_account}.dfs.core.windows.net", spId)
+# spark.conf.set(f"fs.azure.account.oauth2.client.secret.{storage_account}.dfs.core.windows.net", spSecret)
+# spark.conf.set(f"fs.azure.account.oauth2.client.endpoint.{storage_account}.dfs.core.windows.net", f"https://login.microsoftonline.com/{azTenantId}/oauth2/token")
 
 # COMMAND ----------
 
@@ -290,6 +374,10 @@ file_name_expr = F.reverse(F.split(F.input_file_name(), "/")).getItem(0)
 # MAGIC
 # MAGIC - Let's pick up the vibration monitoring dumps from our machines
 # MAGIC - We can then process them on-the-fly to produce real-time insights and even machine learning inference
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 

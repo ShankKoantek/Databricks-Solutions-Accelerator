@@ -147,6 +147,12 @@ display(train.limit(1).filter(size(col('labels')) == 0))
 
 # COMMAND ----------
 
+# from sparknlp.base import DocumentAssembler
+# from sparknlp.annotator import UniversalSentenceEncoder
+# !pip install spark-nlp
+
+# COMMAND ----------
+
 document_assembler = DocumentAssembler() \
   .setInputCol("comment_text") \
   .setOutputCol("document")

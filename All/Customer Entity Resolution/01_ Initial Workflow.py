@@ -243,7 +243,7 @@ if candidate_pairs_pd.shape[0] == 0:
   run_find_training_job()
   candidate_pairs_pd = get_candidate_pairs()
   
-# get list of pairs (as identified by z_cluster) to label 
+# get list of pairs (as identified by z_cluster)    to label 
 z_clusters = list(np.unique(candidate_pairs_pd['z_cluster'])) 
 
 # identify last reviewed cluster

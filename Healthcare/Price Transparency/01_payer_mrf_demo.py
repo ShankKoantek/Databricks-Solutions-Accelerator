@@ -70,12 +70,17 @@ spark.sql("""drop table if exists hls_dev_payer_transparency.payer_transparency_
 
 # COMMAND ----------
 
+# dbutils.fs.ls("/user/hive/warehouse/hls_dev_payer_transparency.db/raw_files/")
+# source_data
+
+# COMMAND ----------
+
 #Read file as a stream and write to Delta
 #Using 64MB as the default buffersize here
 df = spark.readStream.option("buffersize", 67108864).format("payer-mrf").load(source_data)
 query = (
 df.writeStream 
- .outputMode("append") 
+ .outputMode("append")
  .format("delta")
  .trigger(processingTime="10 seconds")
  .option("truncate", "false")
@@ -85,11 +90,7 @@ df.writeStream
 
 # COMMAND ----------
 
-while 1:
-  try:  
-    print(query.lastProgress.get('batchId'))
-  except:
-    pass
+
 
 # COMMAND ----------
 

@@ -12,10 +12,10 @@
 
 # MAGIC %md
 # MAGIC *Prerequisite: Make sure to run 01_Introduction_And_Setup and 02_Fine_Grained_Demand_Forecasting before running this notebook.*
-# MAGIC 
+# MAGIC
 # MAGIC While the previous notebook *(002_Fine_Grained_Demand_Forecasting)* demonstrated the benefits of one of the Databricks' approach to train multiple models in parallel with great speed and cost-effectiveness,
 # MAGIC in this part we show how to use Databricks' graph functionality to traverse the manufacturing value chain to find out how much raw material is needed for production.
-# MAGIC 
+# MAGIC
 # MAGIC Key highlights for this notebook:
 # MAGIC - Solve large scale graph problems by using GraphX as a distributed graph processing framework on top of Apache Spark
 # MAGIC - Leverage the full support for property graphs to incorporate business knowledge and the traverse the manufacturing value chain 
@@ -128,7 +128,7 @@ g = GraphFrame(vertices, edges)
 # MAGIC %md
 # MAGIC ### Step 1
 # MAGIC The following function uses the concept of aggregated messaging to derive a table that maps the raw for each SKU. 
-# MAGIC 
+# MAGIC
 # MAGIC See https://spark.apache.org/docs/latest/graphx-programming-guide.html
 
 # COMMAND ----------
@@ -237,7 +237,7 @@ display(res1)
 # MAGIC %md
 # MAGIC ### Step 2
 # MAGIC The following function uses the concept of aggregated messaging to derive a table that maps the raw to the quantity that is needed to produce the desired finished product. For each raw material it is the product of quantities of all succeeding assembly steps.
-# MAGIC 
+# MAGIC
 # MAGIC See https://spark.apache.org/docs/latest/graphx-programming-guide.html
 
 # COMMAND ----------

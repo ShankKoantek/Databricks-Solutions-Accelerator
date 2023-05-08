@@ -5,7 +5,7 @@
 # COMMAND ----------
 
 # MAGIC %md 
-# MAGIC 
+# MAGIC
 # MAGIC The purpose of this notebook is to identify inventory-related problems in the data including *phantom inventory*, *safety stock* alerts and *zero scan* alerts. This notebook has been developed by [Tredence](https://www.tredence.com/) in partnership with Databricks.
 
 # COMMAND ----------
@@ -19,7 +19,7 @@ import pandas as pd
 # COMMAND ----------
 
 # MAGIC %md ## Step 1: Access Data
-# MAGIC 
+# MAGIC
 # MAGIC Our first step is to access the inventory and vendor data assembled and cleansed in the last notebook:
 
 # COMMAND ----------
@@ -31,11 +31,11 @@ vendor = spark.table('osa.vendor')
 # COMMAND ----------
 
 # MAGIC %md ## Step 2: Identify Phantom Inventory
-# MAGIC 
+# MAGIC
 # MAGIC Next, we will identify problems related to phantom inventory.  Phantom inventory represents product units not accounted for between the inventory and the sales systems.  These units may represent items misplaced, stolen, lost or otherwise inaccurately tracked in one system or the other.  The identification of these units is essential for ensuring the right quantity, *i.e.* not too few and not too many, of a given product are purchased for replenishment and may point to needed operational improvements to ensure accurate inventories are maintained moving forward.
-# MAGIC 
+# MAGIC
 # MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/osa_tredence_phantominventory.png' width=75%>
-# MAGIC 
+# MAGIC
 # MAGIC Phantom inventory is identified by simply calculating the number of units expected to be on-hand at the end of the day relative to those actually on-hand. Minor differences between the units expected and those actually in inventory may not require immediate attention.  A phantom inventory indicator flag is set when the phantom inventory is some multiple of the average daily sales for a given product. Here, we set this multiple to 5-times but some organizations may wish to be more or less sensitive to the detection of problematic levels of phantom inventory:
 
 # COMMAND ----------
@@ -91,11 +91,11 @@ display(phantom_inventory)
 # COMMAND ----------
 
 # MAGIC %md ## Step 3: Identify Out of Stocks
-# MAGIC 
+# MAGIC
 # MAGIC Out of stocks occur when inventory is not sufficient to meet demand.  Most retailers define a safety stock level that serves as the threshold for triggering replenishment orders.  When inventory dips below the safety stock level, a replenishment order is generated.  The remaining inventory on-hand must then be sufficient to meet demand until the replacement units arrive.
-# MAGIC 
+# MAGIC
 # MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/osa_tredence_safetystock.png' width=75%>
-# MAGIC 
+# MAGIC
 # MAGIC There are numerous ways to calculate a safety stock level for a given product.  Here, we will consider the store-specific dynamics associated with a product to arrive at two potentially valid safety stock levels.  The first of these is the number of units on-hand before past replenishment events. The second of these will consider average daily sales relative to lead times for a product. For a given store-SKU combination, we will take the lower of these two values to be our safety stock level.  But before we can calculate these values, we need to estimate the inventory on-hand, something we tackled in our prior phantom inventory calculations:
 
 # COMMAND ----------
@@ -291,11 +291,11 @@ display(inventory_safety_stock)
 # COMMAND ----------
 
 # MAGIC %md With a safety stock level defined for each store-SKU, we can now identify dates where:</p>
-# MAGIC 
+# MAGIC
 # MAGIC 1. The on-hand inventory is less than the safety stock level (*on_hand_less_than_safety_stock*)
 # MAGIC 2. The requested replenishment units are not sufficient to meet safety stock requirements (*insufficient_inventory_pipeline_units*)
 # MAGIC 3. The inventory pipeline is one day away from not being able to fulfill stocking requirements (*insufficient_lead_time*)
-# MAGIC 
+# MAGIC
 # MAGIC Each of these conditions represents an inventory management problem which requires addressing. The first two of these conditions may be calculated as follows:
 
 # COMMAND ----------
@@ -428,13 +428,13 @@ display(consolidated_oos_alerts)
 # COMMAND ----------
 
 # MAGIC %md ## Step 4: Identify Zero Sales Issues
-# MAGIC 
+# MAGIC
 # MAGIC Not every product sells each day in each store location. But when a product goes unsold for a long period of time, it might be wise for someone to verify it is still in inventory.  
-# MAGIC 
+# MAGIC
 # MAGIC <img src='https://brysmiwasb.blob.core.windows.net/demos/images/osa_tredence_zeroscan.png' width=75%>
-# MAGIC 
+# MAGIC
 # MAGIC The challenge is that what constitutes a *long* period of time.  Some products move relatively quickly while many products move only occasionally.  For a product that sales hundreds of units daily, we might suspect an inventory problem if we suddenly see no sales on a given day.  For a product that moves only a few units a month, a few days or even a few weeks with no units sold may be nothing to be concerned with.
-# MAGIC 
+# MAGIC
 # MAGIC With that in mind, we need to examine the number of days with zero units sold for each store-SKU combination relative to the total days a product is available for sale in order to understand the probability a product will experience a zero-sales day:
 
 # COMMAND ----------
@@ -515,7 +515,7 @@ display(zero_sales_inventory.orderBy('store_id','sku','date'))
 # COMMAND ----------
 
 # MAGIC %md ##Step 5: Identify Alert Conditions
-# MAGIC 
+# MAGIC
 # MAGIC We now have identified several conditions that require attention.  We first identified problematic phantom inventory conditions and then identified inventory below safety stock levels.  Finally, we identified days with zero sales events likely to be a result of an inventory issue.  In this last step, we'll consolidate all this information to build a set with which we can more clearly identify inventory dates requiring attention from analysts:
 
 # COMMAND ----------
@@ -557,5 +557,5 @@ display(all_alerts)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC &copy; 2021 Databricks, Inc. All rights reserved. The source in this notebook is provided subject to the [Databricks License](https://databricks.com/db-license-source).  All included or referenced third party libraries are subject to the licenses set forth below.

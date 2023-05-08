@@ -11,9 +11,9 @@
 
 # MAGIC %md
 # MAGIC *Prerequisite: Make sure to run 01_Introduction_And_Setup before running this notebook.*
-# MAGIC 
+# MAGIC
 # MAGIC In this notebook we first find an appropriate time series model and then apply that very same approach to train multiple models in parallel with great speed and cost-effectiveness.  
-# MAGIC 
+# MAGIC
 # MAGIC Key highlights for this notebook:
 # MAGIC - Use Databricks' collaborative and interactive notebook environment to find an appropriate time series model
 # MAGIC - Pandas UDFs (user-defined functions) can take your single-node data science code, and distribute it across different keys (e.g. SKU)  
@@ -58,7 +58,7 @@ from pyspark.sql.types import *
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC ## Build a model
 # MAGIC *while leveraging Databricks' collaborative and interactive environment*
 
@@ -323,7 +323,7 @@ displayHTML(f"The optimal parameters for the selected series with SKU '{pdf.SKU.
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC ## Train thousands of models at scale, any time
 # MAGIC *while still using your preferred libraries and approaches*
 
@@ -387,20 +387,20 @@ display(enriched_df)
 # COMMAND ----------
 
 # MAGIC %md 
-# MAGIC 
+# MAGIC
 # MAGIC ### Solution: High-Level Overview
-# MAGIC 
+# MAGIC
 # MAGIC Benefits:
 # MAGIC - Pure Python & Pandas: easy to develop, test
 # MAGIC - Continue using your favorite libraries
 # MAGIC - Simply assume you're working with a Pandas DataFrame for a single SKU
-# MAGIC 
+# MAGIC
 # MAGIC <img src="https://github.com/PawaritL/data-ai-world-tour-dsml-jan-2022/blob/main/pandas-udf-workflow.png?raw=true" width=40%>
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC #### Build, tune and score a model per each SKU with Pandas UDFs
 
 # COMMAND ----------
@@ -500,7 +500,7 @@ tuning_schema = StructType(
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC 
+# MAGIC
 # MAGIC #### Run distributed processing: `groupBy("SKU")` + `applyInPandas(...)`
 
 # COMMAND ----------

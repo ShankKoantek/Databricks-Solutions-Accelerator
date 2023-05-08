@@ -31,6 +31,10 @@
 
 # COMMAND ----------
 
+!pip install sparknlp
+
+# COMMAND ----------
+
 import os
 import json
 import string

@@ -12,12 +12,12 @@
 
 # MAGIC %md
 # MAGIC *Prerequisite: Make sure to run 01_Introduction_And_Setup, 02_Fine_Grained_Demand_Forecasting and 03_Derive_Raw_Material_Demand before running this notebook.*
-# MAGIC 
+# MAGIC
 # MAGIC While the previous notebook *(03_Derive_Raw_Material_Demand)* demonstrated Databricks' graph functionality to traverse the manufacturing value chain backwards to find out how much raw material is needed for production, this notebook:
 # MAGIC - Checks the availability of each raw material
 # MAGIC - Traverses the manufacturing value chain forwards to check the quantity of SKU's that can actually be delivered
 # MAGIC - Adjusts orders for raw materials accordingly
-# MAGIC 
+# MAGIC
 # MAGIC Key highlights for this notebook:
 # MAGIC - Use Delta and the previous notebook's results to traverse the manufacturing value chain forwards
 

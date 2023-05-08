@@ -86,7 +86,10 @@ job_json = {
                     "spark.executor.cores": "2",
                     "spark.executor.instances": "4"
                     },
-                    "num_workers": 4,
+
+                    # shashank 
+                    # made num_workers from 4 to 1
+                    "num_workers": 1,
                     "node_type_id": {"AWS": "i3.xlarge", "MSA": "Standard_L4s", "GCP": "n1-highmem-4"},
                     "custom_tags": {
                         "usage": "solacc_testing"
@@ -101,7 +104,3 @@ job_json = {
 dbutils.widgets.dropdown("run_job", "False", ["True", "False"])
 run_job = dbutils.widgets.get("run_job") == "True"
 NotebookSolutionCompanion().deploy_compute(job_json, run_job=run_job)
-
-# COMMAND ----------
-
-
